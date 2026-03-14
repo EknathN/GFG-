@@ -1,0 +1,179 @@
+// ── Web Crypto API utilities ──────────────────────────────────────────────────
+// All operations are async, browser-native, no external libraries needed.
+
+/** Generate a random Base64 salt */
+export function generateSalt(bytes = 16) {
+  const arr = crypto.getRandomValues(new Uint8Array(bytes));
+  return btoa(String.fromCharCode(...arr));
+}
+
+/** Generate a random session token */
+export function generateToken(bytes = 32) {
+  const arr = crypto.getRandomValues(new Uint8Array(bytes));
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Hash a password with PBKDF2 + SHA-256 (100,000 iterations) */
+export async function hashPassword(password, salt) {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100_000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return bufferToBase64(bits);
+}
+
+/** Verify password against stored hash */
+export async function verifyPassword(password, salt, storedHash) {
+  const hash = await hashPassword(password, salt);
+  return hash === storedHash;
+}
+
+/** Derive an AES-GCM key from a string (for encrypting stored data) */
+async function deriveKey(secret) {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', encoder.encode(secret), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: encoder.encode('gfg-club-rit-salt-2026'), iterations: 50_000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false, ['encrypt', 'decrypt']
+  );
+}
+
+/** Encrypt a JSON object and return base64 ciphertext */
+export async function encryptData(data, secret) {
+  const key = await deriveKey(secret);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(JSON.stringify(data));
+  const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+  const combined = new Uint8Array(iv.length + ciphertext.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(ciphertext), iv.length);
+  return bufferToBase64(combined.buffer);
+}
+
+/** Decrypt base64 ciphertext and return parsed JSON */
+export async function decryptData(b64, secret) {
+  try {
+    const combined = base64ToUint8Array(b64);
+    const iv = combined.slice(0, 12);
+    const ciphertext = combined.slice(12);
+    const key = await deriveKey(secret);
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+    return JSON.parse(new TextDecoder().decode(decrypted));
+  } catch {
+    return null;
+  }
+}
+
+// ── Buffer Utilities to prevent Call Stack Exceeded ─────────────────────────
+function bufferToBase64(buf) {
+  let binary = '';
+  const bytes = new Uint8Array(buf);
+  const len = bytes.byteLength;
+  // Read in chunks to avoid blowing the call stack
+  const chunkSize = 0x8000;
+  for (let i = 0; i < len; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(b64) {
+  const binaryString = atob(b64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// ── Simple localStorage helpers (users stored encrypted) ────────────────────
+const STORE_KEY = 'gfg_club_users_v1';
+const STORE_SECRET = 'gfg-rit-club-2026-secure-store';
+
+export async function loadUsers() {
+  const raw = localStorage.getItem(STORE_KEY);
+  if (!raw) return [];
+  const users = await decryptData(raw, STORE_SECRET);
+  return users || [];
+}
+
+export async function saveUsers(users) {
+  const encrypted = await encryptData(users, STORE_SECRET);
+  localStorage.setItem(STORE_KEY, encrypted);
+}
+
+export async function findUserByRegNo(regNo) {
+  const users = await loadUsers();
+  return users.find(u => u.regNo.toLowerCase() === regNo.toLowerCase()) || null;
+}
+
+export async function registerUser(userData) {
+  const users = await loadUsers();
+  const exists = users.find(u => u.regNo.toLowerCase() === userData.regNo.toLowerCase());
+  if (exists) throw new Error('Registration number already registered.');
+  const salt = generateSalt();
+  const passwordHash = await hashPassword(userData.password, salt);
+  const newUser = {
+    id: generateToken(8),
+    name: userData.name,
+    regNo: userData.regNo,
+    dept: userData.dept,
+    section: userData.section,
+    year: userData.year,
+    sem: userData.sem,
+    idCardPhoto: userData.idCardPhoto,  // base64
+    email: userData.email,
+    salt,
+    passwordHash,
+    createdAt: new Date().toISOString(),
+    approved: true,
+    points: 0, // NEW: Start global leaderboard practice points at 0
+  };
+  users.push(newUser);
+  await saveUsers(users);
+  return newUser;
+}
+
+export async function addPointsToUser(regNo, pointsToAdd) {
+  const users = await loadUsers();
+  const userIndex = users.findIndex(u => u.regNo.toLowerCase() === regNo.toLowerCase());
+  
+  if (userIndex === -1) throw new Error('User not found.');
+  
+  // Award points safely
+  users[userIndex].points = (users[userIndex].points || 0) + pointsToAdd;
+  await saveUsers(users);
+  
+  // Return the sanitized user object
+  const { salt, passwordHash, ...safeUser } = users[userIndex];
+  return safeUser;
+}
+
+export async function loginUser(regNo, password) {
+  const user = await findUserByRegNo(regNo);
+  if (!user) throw new Error('Registration number not found.');
+  const valid = await verifyPassword(password, user.salt, user.passwordHash);
+  if (!valid) throw new Error('Incorrect password. Please try again.');
+  if (!user.approved) throw new Error('Your account is pending admin approval.');
+  // Return user without sensitive fields
+  const { salt, passwordHash, ...safeUser } = user;
+  return safeUser;
+}
+
+export async function deleteUser(regNo) {
+  const users = await loadUsers();
+  const filteredUsers = users.filter(u => u.regNo.toLowerCase() !== regNo.toLowerCase());
+  if (users.length === filteredUsers.length) {
+    throw new Error('User not found.');
+  }
+  await saveUsers(filteredUsers);
+}

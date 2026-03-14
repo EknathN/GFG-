@@ -1,0 +1,81 @@
+// src/data/events.js
+export const events = [
+  {
+    id: 1,
+    title: "DSA Bootcamp – Arrays & Strings",
+    date: "March 20, 2026",
+    time: "5:00 PM – 7:00 PM",
+    venue: "CLT 2108, RIT",
+    mode: "Offline",
+    description:
+      "A deep-dive session covering arrays, strings, and sliding window patterns. Beginner friendly.",
+    tag: "Workshop",
+    seats: 40,
+    color: "bg-green-100 text-green-700",
+  },
+  {
+    id: 2,
+    title: "Resume & LinkedIn Review Drive",
+    date: "March 25, 2026",
+    time: "3:00 PM – 5:00 PM",
+    venue: "Google Meet",
+    mode: "Online",
+    description:
+      "Get your resume and LinkedIn profile reviewed by senior members and alumni.",
+    tag: "Career",
+    seats: 30,
+    color: "bg-blue-100 text-blue-700",
+  },
+  {
+    id: 3,
+    title: "GFG POTD Contest",
+    date: "April 1, 2026",
+    time: "10:00 AM – 12:00 PM",
+    venue: "Online – GFG Platform",
+    mode: "Online",
+    description:
+      "Solve a curated set of GFG Problems of the Day. Top scorers win certificates.",
+    tag: "Contest",
+    seats: 100,
+    color: "bg-yellow-100 text-yellow-700",
+  },
+  {
+    id: 4,
+    title: "Graph Theory Masterclass",
+    date: "April 8, 2026",
+    time: "6:00 PM – 8:00 PM",
+    venue: "LHC 101, RIT",
+    mode: "Offline",
+    description:
+      "BFS, DFS, Dijkstra, and real-world graph problems. Aimed at intermediate-level coders.",
+    tag: "Workshop",
+    seats: 35,
+    color: "bg-green-100 text-green-700",
+  },
+  {
+    id: 5,
+    title: "Mock Placement Interviews",
+    date: "April 15, 2026",
+    time: "2:00 PM – 6:00 PM",
+    venue: "CLT Labs, RIT",
+    mode: "Offline",
+    description:
+      "One-on-one mock interviews simulating top product company rounds. Feedback guaranteed.",
+    tag: "Career",
+    seats: 20,
+    color: "bg-blue-100 text-blue-700",
+  },
+  {
+    id: 6,
+    title: "Hackathon Prep Sprint",
+    date: "April 22, 2026",
+    time: "4:00 PM – 7:00 PM",
+    venue: "Google Meet",
+    mode: "Online",
+    description:
+      "Team formation, ideation, and full-stack tech stack guidance for upcoming hackathons.",
+    tag: "Hackathon",
+    seats: 60,
+    color: "bg-purple-100 text-purple-700",
+  },
+];
