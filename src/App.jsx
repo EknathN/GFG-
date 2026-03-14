@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Practice from './pages/Practice';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminLogin from './pages/AdminLogin';
 import './index.css';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/contact"  element={<Contact />} />
               <Route path="/login"    element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
 
               {/* Protected routes — require login */}
               <Route path="/events"    element={<ProtectedRoute><Events /></ProtectedRoute>} />

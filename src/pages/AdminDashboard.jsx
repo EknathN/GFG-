@@ -22,7 +22,8 @@ export default function AdminDashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
-  const [entityType, setEntityType] = useState(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newEntity, setNewEntity] = useState({});
 
   useEffect(() => {
     fetchAllData();
@@ -63,6 +64,33 @@ export default function AdminDashboard() {
         fetchAllData();
     } catch (err) {
         alert('Update failed');
+    }
+  };
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+        const entity = activeTab;
+        const body = { ...newEntity };
+        
+        // Basic processing for arrays
+        if (entity === 'blogs' && typeof body.tags === 'string') {
+            body.tags = body.tags.split(',').map(t => t.trim());
+        }
+        if (entity === 'resources' && typeof body.items === 'string') {
+            try { body.items = JSON.parse(body.items); } catch(e) { body.items = []; }
+        }
+        
+        await fetch(`${API_BASE}/${entity}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        setShowAddModal(false);
+        setNewEntity({});
+        fetchAllData();
+    } catch (err) {
+        alert('Failed to add item');
     }
   };
 
@@ -165,7 +193,7 @@ export default function AdminDashboard() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key={activeTab}>
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold capitalize">{activeTab} Management</h2>
-                        <button className="bg-gfg-green px-4 py-2 rounded-xl text-sm font-bold">+ Add New</button>
+                        <button onClick={() => setShowAddModal(true)} className="bg-gfg-green px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-gfg-green/20 hover:scale-105 transition-transform">+ Add New {activeTab.slice(0, -1)}</button>
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                         {data[activeTab].map(item => (
@@ -186,8 +214,129 @@ export default function AdminDashboard() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Add Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                    className="bg-gray-900 border border-white/10 rounded-3xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar relative shadow-2xl">
+                    <button onClick={() => setShowAddModal(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white text-xl">✕</button>
+                    
+                    <h2 className="text-2xl font-black mb-6">Add New {activeTab.slice(0, -1)}</h2>
+                    
+                    <form onSubmit={handleAdd} className="space-y-4">
+                        {activeTab === 'blogs' && (
+                            <>
+                                <Input label="Title" value={newEntity.title} onChange={v => setNewEntity({...newEntity, title: v})} required />
+                                <Input label="Excerpt" value={newEntity.excerpt} onChange={v => setNewEntity({...newEntity, excerpt: v})} required />
+                                <TextArea label="Content" value={newEntity.content} onChange={v => setNewEntity({...newEntity, content: v})} required />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input label="Author" value={newEntity.author} onChange={v => setNewEntity({...newEntity, author: v})} required />
+                                    <Input label="Read Time (e.g. 5 min)" value={newEntity.readTime} onChange={v => setNewEntity({...newEntity, readTime: v})} />
+                                </div>
+                                <Input label="Tags (comma separated)" value={newEntity.tags} onChange={v => setNewEntity({...newEntity, tags: v})} />
+                                <Input label="Image URL" value={newEntity.image} onChange={v => setNewEntity({...newEntity, image: v})} />
+                            </>
+                        )}
+
+                        {activeTab === 'events' && (
+                            <>
+                                <Input label="Title" value={newEntity.title} onChange={v => setNewEntity({...newEntity, title: v})} required />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input label="Date" type="date" value={newEntity.date} onChange={v => setNewEntity({...newEntity, date: v})} required />
+                                    <Input label="Time" value={newEntity.time} onChange={v => setNewEntity({...newEntity, time: v})} required />
+                                </div>
+                                <Input label="Location" value={newEntity.location} onChange={v => setNewEntity({...newEntity, location: v})} required />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Select label="Type" options={['Workshop', 'Seminar', 'Coding Contest', 'Tech Talk']} value={newEntity.type} onChange={v => setNewEntity({...newEntity, type: v})} />
+                                    <Select label="Status" options={['Upcoming', 'Completed', 'Live']} value={newEntity.status} onChange={v => setNewEntity({...newEntity, status: v})} />
+                                </div>
+                                <TextArea label="Description" value={newEntity.description} onChange={v => setNewEntity({...newEntity, description: v})} />
+                                <Input label="Registration Link" value={newEntity.link} onChange={v => setNewEntity({...newEntity, link: v})} />
+                            </>
+                        )}
+
+                        {activeTab === 'resources' && (
+                            <>
+                                <Input label="Category" value={newEntity.category} onChange={v => setNewEntity({...newEntity, category: v})} required />
+                                <TextArea label="Items JSON (e.g. [{'title':'Doc', 'link':'#'}])" value={newEntity.items} onChange={v => setNewEntity({...newEntity, items: v})} required />
+                            </>
+                        )}
+
+                        {activeTab === 'lessons' && (
+                            <>
+                                <Input label="Title" value={newEntity.title} onChange={v => setNewEntity({...newEntity, title: v})} required />
+                                <div className="grid grid-cols-3 gap-4">
+                                    <Input label="Lessons Count" type="number" value={newEntity.lessons} onChange={v => setNewEntity({...newEntity, lessons: v})} />
+                                    <Input label="Duration" value={newEntity.duration} onChange={v => setNewEntity({...newEntity, duration: v})} />
+                                    <Select label="Difficulty" options={['Beginner', 'Intermediate', 'Advanced']} value={newEntity.difficulty} onChange={v => setNewEntity({...newEntity, difficulty: v})} />
+                                </div>
+                                <TextArea label="Description" value={newEntity.description} onChange={v => setNewEntity({...newEntity, description: v})} />
+                                <Input label="Thumbnail URL" value={newEntity.image} onChange={v => setNewEntity({...newEntity, image: v})} />
+                            </>
+                        )}
+
+                        {activeTab === 'practice' && (
+                            <>
+                                <Input label="Problem Name" value={newEntity.name} onChange={v => setNewEntity({...newEntity, name: v})} required />
+                                <div className="grid grid-cols-3 gap-4">
+                                    <Select label="Category" options={['Array', 'String', 'Tree', 'Graph', 'DP', 'Math']} value={newEntity.category} onChange={v => setNewEntity({...newEntity, category: v})} />
+                                    <Select label="Difficulty" options={['Easy', 'Medium', 'Hard']} value={newEntity.difficulty} onChange={v => setNewEntity({...newEntity, difficulty: v})} />
+                                    <Input label="Points" type="number" value={newEntity.points} onChange={v => setNewEntity({...newEntity, points: v})} />
+                                </div>
+                                <TextArea label="Description" value={newEntity.description} onChange={v => setNewEntity({...newEntity, description: v})} required />
+                                <TextArea label="Starter Code" value={newEntity.starterCode} onChange={v => setNewEntity({...newEntity, starterCode: v})} />
+                                <TextArea label="Solution Code" value={newEntity.solution} onChange={v => setNewEntity({...newEntity, solution: v})} />
+                            </>
+                        )}
+
+                        <div className="pt-6">
+                            <button type="submit" className="w-full bg-gfg-green text-white font-bold py-4 rounded-2xl hover:bg-gfg-green-dark transition-all">
+                                Save {activeTab.slice(0, -1)}
+                            </button>
+                        </div>
+                    </form>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+}
+
+function Input({ label, type = "text", value = "", onChange, required = false }) {
+    return (
+        <div>
+            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">{label}</label>
+            <input type={type} value={value} onChange={e => onChange(e.target.value)} required={required}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gfg-green transition-all" />
+        </div>
+    );
+}
+
+function TextArea({ label, value = "", onChange, required = false }) {
+    return (
+        <div>
+            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">{label}</label>
+            <textarea value={value} onChange={e => onChange(e.target.value)} required={required} rows={4}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gfg-green transition-all resize-none" />
+        </div>
+    );
+}
+
+function Select({ label, options, value = "", onChange }) {
+    return (
+        <div>
+            <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wider">{label}</label>
+            <select value={value} onChange={e => onChange(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-gfg-green transition-all">
+                <option value="" disabled className="bg-gray-900">Select {label}</option>
+                {options.map(opt => <option key={opt} value={opt} className="bg-gray-900">{opt}</option>)}
+            </select>
+        </div>
+    );
 }
 
 function StatCard({ title, value, icon, color }) {

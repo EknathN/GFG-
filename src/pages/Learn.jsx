@@ -40,6 +40,22 @@ export default function Learn() {
   const totalLessons = tracks.reduce((sum, t) => sum + t.lessons.length, 0);
   const progressPct = Math.round((completedLessons.size / totalLessons) * 100);
 
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="w-12 h-12 border-4 border-gfg-green border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  if (!activeLesson) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 pt-20">
+      <div className="text-center">
+        <p className="text-4xl mb-4">📚</p>
+        <p className="text-gray-500 font-bold">No lessons available yet.</p>
+        <p className="text-xs text-gray-400 mt-2">Check back later or add content via Admin Dashboard.</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* ── TOP HEADER BAR ── */}

@@ -18,7 +18,8 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    const redirectPath = adminOnly ? '/admin/login' : '/login';
+    return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
   }
 
   if (adminOnly && currentUser?.role !== 'admin') {

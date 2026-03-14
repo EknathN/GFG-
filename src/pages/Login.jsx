@@ -113,7 +113,7 @@ export default function Login() {
             {/* Reg No */}
             <div>
               <label className="block text-sm font-semibold text-gray-300 mb-1.5">Registration Number</label>
-              <input {...register('regNo', { required: 'Reg number is required' })}
+              <input {...register('regNo', { required: 'Registration number is required' })}
                 className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-gfg-green focus:ring-2 focus:ring-gfg-green/30 transition-all uppercase"
                 placeholder="e.g. 211EC030" disabled={isLocked} />
               {errors.regNo && <p className="text-red-400 text-xs mt-1">{errors.regNo.message}</p>}
