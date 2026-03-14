@@ -38,7 +38,7 @@ function FloatingParticles({ count = 2000 }) {
           blending={THREE.AdditiveBlending}
         />
       </Points>
-    </group> group>
+    </group>
   );
 }
 
