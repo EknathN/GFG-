@@ -1,27 +1,48 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import LeaderboardRow from '../components/LeaderboardRow';
 import BlogCard from '../components/BlogCard';
-import { leaderboard as staticLeaderboard } from '../data/leaderboard';
-import { blogPosts } from '../data/blog';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE = 'http://localhost:5000/api';
 const tabs = ['Leaderboard', 'Blog Updates'];
 
 export default function Community() {
   const [activeTab, setActiveTab] = useState('Leaderboard');
+  const [blogs, setBlogs] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { currentUser } = useAuth();
 
-  // Dynamically calculate leaderboard based on static data + current user's progress
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [blogRes, lbRes] = await Promise.all([
+          fetch(`${API_BASE}/blogs`),
+          fetch(`${API_BASE}/leaderboard`)
+        ]);
+        setBlogs(await blogRes.json());
+        setLeaderboard(await lbRes.json());
+      } catch (err) {
+        console.error('Failed to fetch community data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Dynamically calculate leaderboard based on API data + current user's progress
   const displayLeaderboard = useMemo(() => {
-    let combined = [...staticLeaderboard];
+    let combined = [...leaderboard];
 
     if (currentUser) {
-      const userIdx = combined.findIndex(m => m.name === currentUser.name);
+      const userIdx = combined.findIndex(m => m.name === currentUser.name || m.regNo === currentUser.regNo);
       const userPoints = currentUser.points || 0;
 
       if (userIdx !== -1) {
-        combined[userIdx] = { ...combined[userIdx], points: combined[userIdx].points + userPoints };
+        // User already in leaderboard API data, points might be different than current session
+        // For consistency, we'll use the API data but ensure it's up to date
       } else if (userPoints > 0) {
         combined.push({
           name: currentUser.name,
@@ -42,7 +63,7 @@ export default function Community() {
         rank: i + 1, 
         badge: i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "⭐" 
       }));
-  }, [currentUser]);
+  }, [leaderboard, currentUser]);
 
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
@@ -135,7 +156,7 @@ export default function Community() {
             transition={{ duration: 0.25 }}
           >
             <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-6">
-              {blogPosts.map((post, i) => (
+              {blogs.map((post, i) => (
                 <motion.div
                   key={post.id}
                   initial={{ opacity: 0, y: 20 }}

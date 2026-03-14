@@ -13,6 +13,7 @@ import Learn from './pages/Learn';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Practice from './pages/Practice';
+import AdminDashboard from './pages/AdminDashboard';
 import './index.css';
 
 export default function App() {
@@ -35,6 +36,9 @@ export default function App() {
               <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
               <Route path="/practice"  element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/learn"     element={<ProtectedRoute><Learn /></ProtectedRoute>} />
+              
+              {/* Admin only */}
+              <Route path="/admin"     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

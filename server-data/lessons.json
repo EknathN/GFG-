@@ -1,0 +1,136 @@
+[
+  {
+    "id": "dsa",
+    "title": "Data Structures & Algorithms",
+    "icon": "🧠",
+    "color": "bg-green-100 text-green-700 border-green-200",
+    "headerColor": "from-green-600 to-green-800",
+    "lessons": [
+      {
+        "id": "arrays",
+        "title": "Arrays",
+        "difficulty": "Beginner",
+        "duration": "15 min",
+        "theory": "## Arrays\nAn array stores elements at contiguous memory. Access is O(1), search is O(n), insert/delete O(n).\n\n### Operations\n- **Access:** arr[i] → O(1)\n- **Search:** linear scan → O(n)\n- **Insert/Delete:** shift elements → O(n)\n\n### Tips\nUse arrays when size is fixed and random access is needed frequently.",
+        "starterCode": {
+          "python": "arr = [10, 20, 30, 40, 50]\nprint(\"Array:\", arr)\nprint(\"Index 2:\", arr[2])\nprint(\"Max:\", max(arr))\nprint(\"Sum:\", sum(arr))\narr.reverse()\nprint(\"Reversed:\", arr)\narr.sort()\nprint(\"Sorted:\", arr)",
+          "javascript": "const arr = [10, 20, 30, 40, 50];\nconsole.log(\"Array:\", arr.join(\", \"));\nconsole.log(\"Index 2:\", arr[2]);\nconsole.log(\"Max:\", Math.max(...arr));\nconsole.log(\"Sum:\", arr.reduce((a,b)=>a+b,0));\nconsole.log(\"Reversed:\", [...arr].reverse().join(\", \"));\nconsole.log(\"Sorted:\", [...arr].sort((a,b)=>a-b).join(\", \"));",
+          "cpp": "#include<iostream>\n#include<algorithm>\nusing namespace std;\nint main(){\n  int arr[]={10,20,30,40,50}, n=5;\n  cout<<\"Max: \"<<*max_element(arr,arr+n)<<endl;\n  int sum=0; for(int x:arr) sum+=x;\n  cout<<\"Sum: \"<<sum<<endl;\n  reverse(arr,arr+n);\n  cout<<\"Reversed: \"; for(int x:arr) cout<<x<<\" \"; cout<<endl;\n  return 0;\n}"
+        },
+        "challenge": {
+          "title": "🎯 Two Sum",
+          "description": "Find two numbers in array that add up to a target. Print their indices.",
+          "hint": "Use nested loops or a hashmap."
+        }
+      },
+      {
+        "id": "strings",
+        "title": "Strings",
+        "difficulty": "Beginner",
+        "duration": "12 min",
+        "theory": "## Strings\nA string is a sequence of characters. Strings are **immutable** in Python and Java.\n\n### Key Operations\n- **Length:** O(1)\n- **Slicing:** O(k)\n- **Concatenation:** O(n)\n- **Search (find):** O(n)\n\n### Common Tricks\nReverse a string: `s[::-1]` in Python. Check palindrome by comparing with reversed.",
+        "starterCode": {
+          "python": "s = \"GeeksForGeeks\"\nprint(\"Original:\", s)\nprint(\"Uppercase:\", s.upper())\nprint(\"Length:\", len(s))\nprint(\"Reversed:\", s[::-1])\nprint(\"Is palindrome:\", s == s[::-1])\nprint(\"Count 'e':\", s.lower().count('e'))\nwords = \"Hello World Python\"\nprint(\"Words:\", words.split())\nprint(\"Joined:\", \"-\".join(words.split()))",
+          "javascript": "const s = \"GeeksForGeeks\";\nconsole.log(\"Original:\", s);\nconsole.log(\"Uppercase:\", s.toUpperCase());\nconsole.log(\"Length:\", s.length);\nconst rev = s.split(\"\").reverse().join(\"\");\nconsole.log(\"Reversed:\", rev);\nconsole.log(\"Is palindrome:\", s === rev);\nconst words = \"Hello World JavaScript\";\nconsole.log(\"Words:\", words.split(\" \"));\nconsole.log(\"Joined:\", words.split(\" \").join(\"-\"));",
+          "cpp": "#include<iostream>\n#include<algorithm>\n#include<string>\nusing namespace std;\nint main(){\n  string s=\"GeeksForGeeks\";\n  cout<<\"Length: \"<<s.length()<<endl;\n  string rev=s; reverse(rev.begin(),rev.end());\n  cout<<\"Reversed: \"<<rev<<endl;\n  cout<<\"Palindrome: \"<<(s==rev?\"Yes\":\"No\")<<endl;\n  return 0;\n}"
+        },
+        "challenge": {
+          "title": "🎯 Anagram Check",
+          "description": "Check if two strings are anagrams of each other.",
+          "hint": "Sort both strings and compare, or count character frequencies."
+        }
+      },
+      {
+        "id": "linkedlist",
+        "title": "Linked Lists",
+        "difficulty": "Beginner",
+        "duration": "20 min",
+        "theory": "## Linked Lists\nEach node holds data and a pointer to the next node. Dynamic size; O(1) insert at head.\n\n### Types\n1. Singly — each node points forward\n2. Doubly — each node has prev and next\n3. Circular — tail points back to head\n\n### Complexity\n| Op | Time |\n|---|---|\n|Insert at head|O(1)|\n|Search|O(n)|\n|Delete at head|O(1)|",
+        "starterCode": {
+          "python": "class Node:\n    def __init__(self, data):\n        self.data = data\n        self.next = None\n\nclass LinkedList:\n    def __init__(self): self.head = None\n\n    def push(self, data):\n        node = Node(data)\n        node.next = self.head\n        self.head = node\n\n    def display(self):\n        cur, result = self.head, []\n        while cur: result.append(str(cur.data)); cur = cur.next\n        print(\" -> \".join(result) + \" -> NULL\")\n\n    def length(self):\n        cur, count = self.head, 0\n        while cur: count += 1; cur = cur.next\n        return count\n\nll = LinkedList()\nfor v in [10,20,30,40]: ll.push(v)\nll.display()\nprint(\"Length:\", ll.length())",
+          "javascript": "class Node { constructor(d){this.data=d;this.next=null;} }\nclass LinkedList {\n  constructor(){this.head=null;}\n  push(d){const n=new Node(d);n.next=this.head;this.head=n;}\n  display(){let c=this.head,r=[];while(c){r.push(c.data);c=c.next;}console.log(r.join(\" -> \")+\" -> NULL\");}\n  length(){let c=this.head,cnt=0;while(c){cnt++;c=c.next;}return cnt;}\n}\nconst ll=new LinkedList();\n[10,20,30,40].forEach(v=>ll.push(v));\nll.display();\nconsole.log(\"Length:\", ll.length());",
+          "cpp": "#include<iostream>\nusing namespace std;\nstruct Node{int data;Node*next;Node(int d):data(d),next(nullptr){}};\nvoid push(Node*&h,int d){Node*n=new Node(d);n->next=h;h=n;}\nvoid display(Node*h){while(h){cout<<h->data<<\" -> \";h=h->next;}cout<<\"NULL\"<<endl;}\nint main(){\n  Node*head=nullptr;\n  for(int v:{10,20,30,40}) push(head,v);\n  display(head);\n  return 0;\n}"
+        },
+        "challenge": {
+          "title": "🎯 Reverse Linked List",
+          "description": "Write code to reverse a linked list in-place.",
+          "hint": "Use three pointers: prev, curr, next."
+        }
+      }
+    ]
+  },
+  {
+    "id": "python",
+    "title": "Python for Beginners",
+    "icon": "🐍",
+    "color": "bg-blue-100 text-blue-700 border-blue-200",
+    "headerColor": "from-blue-600 to-blue-800",
+    "lessons": [
+      {
+        "id": "py-basics",
+        "title": "Variables & Data Types",
+        "difficulty": "Beginner",
+        "duration": "10 min",
+        "theory": "## Python Basics\nPython is beginner-friendly, readable, and versatile. No type declarations needed.\n\n### Data Types\n- `str` — text: `\"hello\"`\n- `int` — integer: `42`\n- `float` — decimal: `3.14`\n- `bool` — True/False\n- `list` — mutable sequence: `[1,2,3]`\n\n### f-strings\n`f\"Hello {name}!\"` — the modern way to format strings.",
+        "starterCode": {
+          "python": "name = \"GFG Coder\"\nage = 20\ngpa = 9.2\nis_member = True\n\nprint(f\"Name: {name}\")\nprint(f\"Age: {age}, GPA: {gpa}\")\nprint(f\"Member: {is_member}\")\nprint(f\"Type of age: {type(age)}\")\n\n# Arithmetic\nx, y = 17, 5\nprint(f\"\\n{x} + {y} = {x+y}\")\nprint(f\"{x} - {y} = {x-y}\")\nprint(f\"{x} * {y} = {x*y}\")\nprint(f\"{x} / {y} = {x/y:.2f}\")\nprint(f\"{x} // {y} = {x//y}  (floor division)\")\nprint(f\"{x} % {y} = {x%y}   (modulo)\")\nprint(f\"{x} ** {y} = {x**y}  (power)\")"
+        },
+        "challenge": {
+          "title": "🎯 Temperature Converter",
+          "description": "Write a program that converts Celsius to Fahrenheit and Kelvin. Formula: F = C*9/5 + 32, K = C + 273.15",
+          "hint": "Use variables and f-strings to display the converted values."
+        }
+      }
+    ]
+  },
+  {
+    "id": "webdev",
+    "title": "Web Development",
+    "icon": "🌐",
+    "color": "bg-orange-100 text-orange-700 border-orange-200",
+    "headerColor": "from-orange-500 to-orange-700",
+    "lessons": [
+      {
+        "id": "js-basics",
+        "title": "JavaScript Fundamentals",
+        "difficulty": "Beginner",
+        "duration": "15 min",
+        "theory": "## JavaScript Basics\nJS is the language of the web. It runs in the browser and on servers (Node.js).\n\n### Variables\n- `const` — block-scoped, can't reassign\n- `let` — block-scoped, reassignable\n- `var` — function-scoped (avoid)\n\n### Key features\n- Dynamic typing\n- First-class functions\n- Prototype-based OOP\n- Event-driven, async-friendly",
+        "starterCode": {
+          "javascript": "// Types and coercion\nconsole.log(typeof \"hello\", typeof 42, typeof true, typeof undefined);\nconsole.log(typeof null);    // \"object\" — historic JS quirk\nconsole.log(typeof function(){}); // \"function\"\n\n// Truthy / Falsy\nconst falsy = [false, 0, \"\", null, undefined, NaN];\nfalsy.forEach(v => console.log(v, \"→\", Boolean(v)));\n\n// Template literals\nconst name = \"GFG Coder\", score = 9.2;\nconsole.log(`\\nHello ${name}! Your score is ${score}`);\nconsole.log(`Grade: ${score >= 9 ? \"Distinction\" : \"First Class\"}`);\n\n// Destructuring\nconst [a, b, ...rest] = [1,2,3,4,5];\nconsole.log(\"\\na:\", a, \"b:\", b, \"rest:\", rest);\nconst { x=0, y=0, z=0 } = { x:10, y:20 };\nconsole.log(\"x:\", x, \"y:\", y, \"z:\", z);\n\n// Spread\nconst arr1=[1,2,3], arr2=[4,5,6];\nconsole.log(\"\\nMerged:\", [...arr1,...arr2]);\nconst obj = { name:\"Alice\", ...{ age:20, grade:\"A\"} };\nconsole.log(\"Merged obj:\", JSON.stringify(obj));"
+        },
+        "challenge": {
+          "title": "🎯 Array Flattening",
+          "description": "Flatten a deeply nested array [[1,[2,3]],[4,[5,[6]]]] into [1,2,3,4,5,6] without using .flat()",
+          "hint": "Use recursion: for each element, if it's an array recurse, else push to result."
+        }
+      }
+    ]
+  },
+  {
+    "id": "cp",
+    "title": "Competitive Programming",
+    "icon": "⚡",
+    "color": "bg-purple-100 text-purple-700 border-purple-200",
+    "headerColor": "from-purple-600 to-purple-800",
+    "lessons": [
+      {
+        "id": "complexity",
+        "title": "Time & Space Complexity",
+        "difficulty": "Beginner",
+        "duration": "20 min",
+        "theory": "## Big O Notation\nDescribes how runtime scales with input size n.\n\n| O | Name | Example |\n|---|---|---|\n|O(1)|Constant|Array access|\n|O(log n)|Logarithmic|Binary search|\n|O(n)|Linear|Linear search|\n|O(n log n)|Linearithmic|Merge sort|\n|O(n²)|Quadratic|Bubble sort|\n|O(2ⁿ)|Exponential|Naive Fibonacci|\n\n**Rules:** Drop constants (O(2n)→O(n)), drop lower terms (O(n²+n)→O(n²)).",
+        "starterCode": {
+          "python": "import time\n\ndef measure(fn, *args):\n    t = time.perf_counter()\n    r = fn(*args)\n    return r, (time.perf_counter()-t)*1000\n\n# O(1)\ndef first(arr): return arr[0]\n\n# O(n)\ndef linear_sum(arr): return sum(arr)\n\n# O(log n)\ndef binary_search(arr, t):\n    l,r = 0,len(arr)-1\n    while l<=r:\n        mid=(l+r)//2\n        if arr[mid]==t: return mid\n        elif arr[mid]<t: l=mid+1\n        else: r=mid-1\n    return -1\n\n# O(n^2)\ndef bubble_sort(arr):\n    a=arr[:]\n    for i in range(len(a)):\n        for j in range(len(a)-i-1):\n            if a[j]>a[j+1]: a[j],a[j+1]=a[j+1],a[j]\n    return a\n\nn = 5000\narr = list(range(n))\n_, t1 = measure(first, arr)\n_, t2 = measure(linear_sum, arr)\n_, t3 = measure(binary_search, arr, n//2)\n_, t4 = measure(bubble_sort, arr)\nprint(f\"n = {n}\")\nprint(f\"O(1)      first():          {t1:.4f}ms\")\nprint(f\"O(n)      linear_sum():     {t2:.4f}ms\")\nprint(f\"O(log n)  binary_search():  {t3:.4f}ms\")\nprint(f\"O(n^2)    bubble_sort():    {t4:.2f}ms\")",
+          "javascript": "function measure(fn,...args){const t=performance.now();const r=fn(...args);return{r,t:performance.now()-t};}\nconst n=5000, arr=Array.from({length:n},(_,i)=>i);\nconst t1=measure(a=>a[0],arr);\nconst t2=measure(a=>a.reduce((s,x)=>s+x,0),arr);\nfunction bs(arr,t){let l=0,r=arr.length-1;while(l<=r){const m=(l+r)>>1;if(arr[m]===t)return m;arr[m]<t?l=m+1:r=m-1;}return -1;}\nconst t3=measure(bs,arr,n/2);\nfunction bubble(arr){const a=[...arr];for(let i=0;i<a.length;i++)for(let j=0;j<a.length-i-1;j++)if(a[j]>a[j+1])[a[j],a[j+1]]=[a[j+1],a[j]];return a;}\nconst t4=measure(bubble,arr);\nconsole.log(`n = ${n}`);\nconsole.log(`O(1)      first:         ${t1.t.toFixed(4)}ms`);\nconsole.log(`O(n)      reduce sum:    ${t2.t.toFixed(4)}ms`);\nconsole.log(`O(log n)  binary search: ${t3.t.toFixed(4)}ms`);\nconsole.log(`O(n^2)    bubble sort:   ${t4.t.toFixed(2)}ms`);",
+          "cpp": "#include<iostream>\n#include<vector>\n#include<algorithm>\n#include<chrono>\nusing namespace std;\nusing ms=chrono::duration<double,milli>;\nauto now=[](){return chrono::high_resolution_clock::now();};\nint main(){\n  int n=5000; vector<int>arr(n); iota(arr.begin(),arr.end(),0);\n  auto t1=now(); int f=arr[0]; double d1=ms(now()-t1).count();\n  auto t2=now(); int s=0;for(int x:arr)s+=x; double d2=ms(now()-t2).count();\n  auto t3=now(); auto it=lower_bound(arr.begin(),arr.end(),n/2); double d3=ms(now()-t3).count();\n  cout<<\"n=\"<<n<<endl;\n  cout<<\"O(1)     first:         \"<<d1<<\"ms\"<<endl;\n  cout<<\"O(n)     sum:           \"<<d2<<\"ms\"<<endl;\n  cout<<\"O(log n) binary_search: \"<<d3<<\"ms\"<<endl;\n  return 0;\n}"
+        },
+        "challenge": {
+          "title": "🎯 Analyze Your Code",
+          "description": "Find duplicates in an array. First write O(n²) brute force, then optimize to O(n) using a set.",
+          "hint": "O(n): iterate once, if element in seen set → duplicate. Else add to seen."
+        }
+      }
+    ]
+  }
+]

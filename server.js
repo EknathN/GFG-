@@ -2,8 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { Resend } from 'resend';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.join(__dirname, 'server-data');
 
 const app = express();
 app.use(cors());
@@ -11,6 +18,68 @@ app.use(express.json());
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Utility to read/write JSON data
+async function readData(file) {
+  try {
+    const filePath = path.join(DATA_DIR, `${file}.json`);
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (err) {
+    console.error(`Error reading ${file}:`, err);
+    return [];
+  }
+}
+
+async function writeData(file, data) {
+  const filePath = path.join(DATA_DIR, `${file}.json`);
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+}
+
+// Generic CRUD endpoints
+const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice'];
+
+ENTITIES.forEach(entity => {
+  // GET all
+  app.get(`/api/${entity}`, async (req, res) => {
+    const data = await readData(entity);
+    res.json(data);
+  });
+
+  // POST new
+  app.post(`/api/${entity}`, async (req, res) => {
+    const data = await readData(entity);
+    const newItem = { id: Date.now(), ...req.body };
+    data.push(newItem);
+    await writeData(entity, data);
+    res.status(201).json(newItem);
+  });
+
+  // PUT update
+  app.put(`/api/${entity}/:id`, async (req, res) => {
+    const { id } = req.params;
+    const data = await readData(entity);
+    const index = data.findIndex(item => item.id == id || item.rank == id); // handle leaderboard 'rank'
+    if (index === -1) return res.status(404).json({ error: 'Item not found' });
+    
+    data[index] = { ...data[index], ...req.body };
+    await writeData(entity, data);
+    res.json(data[index]);
+  });
+
+  // DELETE
+  app.delete(`/api/${entity}/:id`, async (req, res) => {
+    const { id } = req.params;
+    let data = await readData(entity);
+    const initialLength = data.length;
+    data = data.filter(item => item.id != id && item.rank != id);
+    if (data.length === initialLength) return res.status(404).json({ error: 'Item not found' });
+    
+    await writeData(entity, data);
+    res.status(204).send();
+  });
+});
+
+// Mail endpoint
 app.post('/api/send-otp', async (req, res) => {
   const { toEmail, toName, otpCode } = req.body;
 
@@ -52,5 +121,5 @@ app.post('/api/send-otp', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Mail Server running on http://localhost:${PORT} with Resend API`);
+  console.log(`✅ Server running on http://localhost:${PORT}`);
 });

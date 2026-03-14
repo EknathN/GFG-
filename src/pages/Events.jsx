@@ -1,12 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import EventCard from '../components/EventCard';
-import { events } from '../data/events';
+
+const API_BASE = 'http://localhost:5000/api';
 
 export default function Events() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/events`)
+      .then(r => r.json())
+      .then(setEvents)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const {
     register,

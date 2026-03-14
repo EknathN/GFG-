@@ -128,6 +128,12 @@ export default function Navbar() {
                         <p className="text-xs text-gray-400">{currentUser?.dept} · {currentUser?.section} · {currentUser?.year}</p>
                       </div>
                       <div className="p-2">
+                        {currentUser?.role === 'admin' && (
+                          <Link to="/admin" onClick={() => setShowDropdown(false)}
+                            className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gfg-green hover:bg-gfg-green/5 rounded-xl transition-all font-bold">
+                            <span>🛡️ Admin Dashboard</span>
+                          </Link>
+                        )}
                         <button onClick={handleLogout}
                           className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-black rounded-xl transition-all font-semibold">
                           <span>🚪 Sign Out</span>

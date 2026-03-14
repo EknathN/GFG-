@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "title": "How I cracked my first SDE Internship at a Product Company",
+    "author": "Arjun Sharma",
+    "date": "March 10, 2026",
+    "tag": "Career",
+    "url": "https://medium.com/@gfgclub/internship",
+    "excerpt": "After 6 months of consistent practice and 3 failed attempts, I finally got an offer from a top product company. Here's exactly what worked for me.",
+    "readTime": "8 min read",
+    "avatar": "AS"
+  },
+  {
+    "id": 2,
+    "title": "Dynamic Programming Patterns Every Coder Should Know",
+    "author": "Priya Nair",
+    "date": "March 5, 2026",
+    "tag": "DSA",
+    "url": "https://medium.com/@gfgclub/dp-patterns",
+    "excerpt": "DP seems hard until you recognize the pattern. I've broken down the top 7 DP patterns with examples that will change how you approach these problems.",
+    "readTime": "12 min read",
+    "avatar": "PN"
+  },
+  {
+    "id": 3,
+    "title": "A Beginner's Guide to Competitive Programming at RIT",
+    "author": "Rohan Kulkarni",
+    "date": "February 28, 2026",
+    "tag": "CP",
+    "url": "https://medium.com/@gfgclub/cp-guide",
+    "excerpt": "Just starting out with Codeforces and CodeChef? I share my journey from Div. 4 to Div. 2 and the resources that helped me the most.",
+    "readTime": "6 min read",
+    "avatar": "RK"
+  },
+  {
+    "id": 4,
+    "title": "Building a Full-Stack Project That Impressed Interviewers",
+    "author": "Ananya Desai",
+    "date": "February 20, 2026",
+    "tag": "Dev",
+    "url": "https://medium.com/@gfgclub/fullstack-project",
+    "excerpt": "Not just another todo app. I built a project that solved a real problem and walked interviewers through my thought process step by step.",
+    "readTime": "10 min read",
+    "avatar": "AD"
+  }
+]

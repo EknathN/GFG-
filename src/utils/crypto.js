@@ -95,20 +95,13 @@ function base64ToUint8Array(b64) {
   return bytes;
 }
 
-// ── Simple localStorage helpers (users stored encrypted) ────────────────────
-const STORE_KEY = 'gfg_club_users_v1';
-const STORE_SECRET = 'gfg-rit-club-2026-secure-store';
+// ── Simple Backend API helpers (users stored on server) ────────────────────
+const API_BASE = 'http://localhost:5000/api';
 
 export async function loadUsers() {
-  const raw = localStorage.getItem(STORE_KEY);
-  if (!raw) return [];
-  const users = await decryptData(raw, STORE_SECRET);
-  return users || [];
-}
-
-export async function saveUsers(users) {
-  const encrypted = await encryptData(users, STORE_SECRET);
-  localStorage.setItem(STORE_KEY, encrypted);
+  const res = await fetch(`${API_BASE}/users`);
+  if (!res.ok) return [];
+  return res.json();
 }
 
 export async function findUserByRegNo(regNo) {
@@ -120,10 +113,11 @@ export async function registerUser(userData) {
   const users = await loadUsers();
   const exists = users.find(u => u.regNo.toLowerCase() === userData.regNo.toLowerCase());
   if (exists) throw new Error('Registration number already registered.');
+  
   const salt = generateSalt();
   const passwordHash = await hashPassword(userData.password, salt);
+  
   const newUser = {
-    id: generateToken(8),
     name: userData.name,
     regNo: userData.regNo,
     dept: userData.dept,
@@ -135,26 +129,36 @@ export async function registerUser(userData) {
     salt,
     passwordHash,
     createdAt: new Date().toISOString(),
-    approved: true,
-    points: 0, // NEW: Start global leaderboard practice points at 0
+    approved: true, // Default to approved for now as per current logic
+    role: users.length === 0 ? 'admin' : 'member', // First user is admin
+    points: 0,
   };
-  users.push(newUser);
-  await saveUsers(users);
-  return newUser;
+
+  const res = await fetch(`${API_BASE}/users`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newUser),
+  });
+
+  if (!res.ok) throw new Error('Failed to register user on server.');
+  return res.json();
 }
 
 export async function addPointsToUser(regNo, pointsToAdd) {
-  const users = await loadUsers();
-  const userIndex = users.findIndex(u => u.regNo.toLowerCase() === regNo.toLowerCase());
+  const user = await findUserByRegNo(regNo);
+  if (!user) throw new Error('User not found.');
   
-  if (userIndex === -1) throw new Error('User not found.');
+  const updatedPoints = (user.points || 0) + pointsToAdd;
   
-  // Award points safely
-  users[userIndex].points = (users[userIndex].points || 0) + pointsToAdd;
-  await saveUsers(users);
-  
-  // Return the sanitized user object
-  const { salt, passwordHash, ...safeUser } = users[userIndex];
+  const res = await fetch(`${API_BASE}/users/${user.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ points: updatedPoints }),
+  });
+
+  if (!res.ok) throw new Error('Failed to update points on server.');
+  const updatedUser = await res.json();
+  const { salt, passwordHash, ...safeUser } = updatedUser;
   return safeUser;
 }
 
@@ -164,16 +168,17 @@ export async function loginUser(regNo, password) {
   const valid = await verifyPassword(password, user.salt, user.passwordHash);
   if (!valid) throw new Error('Incorrect password. Please try again.');
   if (!user.approved) throw new Error('Your account is pending admin approval.');
-  // Return user without sensitive fields
+  
   const { salt, passwordHash, ...safeUser } = user;
   return safeUser;
 }
 
 export async function deleteUser(regNo) {
-  const users = await loadUsers();
-  const filteredUsers = users.filter(u => u.regNo.toLowerCase() !== regNo.toLowerCase());
-  if (users.length === filteredUsers.length) {
-    throw new Error('User not found.');
-  }
-  await saveUsers(filteredUsers);
+  const user = await findUserByRegNo(regNo);
+  if (!user) throw new Error('User not found.');
+  
+  const res = await fetch(`${API_BASE}/users/${user.id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete user on server.');
 }

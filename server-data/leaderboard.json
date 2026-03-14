@@ -1,0 +1,12 @@
+[
+  { "rank": 1, "name": "Arjun Sharma", "branch": "CSE", "year": "4th", "points": 4820, "badge": "🥇", "solved": 312, "streak": 45 },
+  { "rank": 2, "name": "Priya Nair", "branch": "CSE", "year": "3rd", "points": 4510, "badge": "🥈", "solved": 290, "streak": 38 },
+  { "rank": 3, "name": "Rohan Kulkarni", "branch": "IT", "year": "4th", "points": 4280, "badge": "🥉", "solved": 271, "streak": 30 },
+  { "rank": 4, "name": "Ananya Desai", "branch": "CSE", "year": "2nd", "points": 3940, "badge": "⭐", "solved": 248, "streak": 22 },
+  { "rank": 5, "name": "Karthik Rao", "branch": "ECE", "year": "3rd", "points": 3720, "badge": "⭐", "solved": 235, "streak": 18 },
+  { "rank": 6, "name": "Sneha Patil", "branch": "IT", "year": "2nd", "points": 3510, "badge": "⭐", "solved": 218, "streak": 15 },
+  { "rank": 7, "name": "Divyansh Gupta", "branch": "CSE", "year": "3rd", "points": 3300, "badge": "⭐", "solved": 204, "streak": 12 },
+  { "rank": 8, "name": "Meera Iyer", "branch": "CSE", "year": "2nd", "points": 3100, "badge": "⭐", "solved": 192, "streak": 10 },
+  { "rank": 9, "name": "Aditya Bose", "branch": "IT", "year": "3rd", "points": 2890, "badge": "⭐", "solved": 178, "streak": 8 },
+  { "rank": 10, "name": "Riya Mehta", "branch": "CSE", "year": "1st", "points": 2650, "badge": "⭐", "solved": 160, "streak": 6 }
+]

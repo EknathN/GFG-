@@ -1,63 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeEditor from '../components/CodeEditor';
 import { useAuth } from '../context/AuthContext';
 
-// Mock practice problems
-const practiceProblems = [
-  {
-    id: 1,
-    title: 'Two Sum',
-    difficulty: 'Easy',
-    points: 100,
-    description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.',
-    hint: 'You can use a Hash Map to store the numbers you have seen so far.',
-    starterCode: {
-      python: 'def two_sum(nums, target):\n    # Write your code here\n    pass\n',
-      javascript: 'function twoSum(nums, target) {\n    // Write your code here\n}\n',
-      cpp: '#include <iostream>\n#include <vector>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    // Write your code here\n    return {};\n}\n'
-    }
-  },
-  {
-    id: 2,
-    title: 'Reverse Linked List',
-    difficulty: 'Easy',
-    points: 100,
-    description: 'Given the `head` of a singly linked list, reverse the list, and return the reversed list.',
-    hint: 'Use three pointers: prev, curr, and next.',
-    starterCode: {
-      python: '# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\ndef reverse_list(head):\n    # Write your code here\n    pass\n',
-      javascript: '/*\n * function ListNode(val, next) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.next = (next===undefined ? null : next)\n * }\n */\n\nfunction reverseList(head) {\n    // Write your code here\n}\n',
-      cpp: '/**\n * struct ListNode {\n *     int val;\n *     ListNode *next;\n *     ListNode(int x) : val(x), next(NULL) {}\n * };\n */\n\nListNode* reverseList(ListNode* head) {\n    // Write your code here\n    return NULL;\n}\n'
-    }
-  },
-  {
-    id: 3,
-    title: 'Longest Substring Without Repeating Characters',
-    difficulty: 'Medium',
-    points: 250,
-    description: 'Given a string `s`, find the length of the longest substring without repeating characters.',
-    hint: 'Use a sliding window approach with a Set or Map to keep track of characters.',
-    starterCode: {
-      python: 'def length_of_longest_substring(s: str) -> int:\n    # Write your code here\n    pass\n',
-      javascript: 'function lengthOfLongestSubstring(s) {\n    // Write your code here\n}\n',
-      cpp: '#include <iostream>\n#include <string>\nusing namespace std;\n\nint lengthOfLongestSubstring(string s) {\n    // Write your code here\n    return 0;\n}\n'
-    }
-  },
-  {
-    id: 4,
-    title: 'Merge K Sorted Lists',
-    difficulty: 'Hard',
-    points: 500,
-    description: 'You are given an array of `k` linked-lists `lists`, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.',
-    hint: 'You can use a Min-Heap (Priority Queue) to always get the smallest element among all the heads of the lists.',
-    starterCode: {
-      python: '# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\ndef merge_k_lists(lists):\n    # Write your code here\n    pass\n',
-      javascript: '/*\n * function ListNode(val, next) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.next = (next===undefined ? null : next)\n * }\n */\n\nfunction mergeKLists(lists) {\n    // Write your code here\n}\n',
-      cpp: '/**\n * struct ListNode {\n *     int val;\n *     ListNode *next;\n *     ListNode(int x) : val(x), next(NULL) {}\n * };\n */\n\nListNode* mergeKLists(vector<ListNode*>& lists) {\n    // Write your code here\n    return NULL;\n}\n'
-    }
-  }
-];
+const API_BASE = 'http://localhost:5000/api';
 
 const difficultyBadge = {
   Easy: 'bg-green-100 text-green-700',
@@ -66,10 +12,20 @@ const difficultyBadge = {
 };
 
 export default function Practice() {
+  const [practiceProblems, setPracticeProblems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeProblem, setActiveProblem] = useState(null);
   const [solvedProblems, setSolvedProblems] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addPoints } = useAuth();
+
+  useEffect(() => {
+    fetch(`${API_BASE}/practice`)
+      .then(r => r.json())
+      .then(setPracticeProblems)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleEarnPoints = async () => {
     if (!activeProblem) return;

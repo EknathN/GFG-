@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "Two Sum",
+    "difficulty": "Easy",
+    "points": 100,
+    "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`.",
+    "hint": "You can use a Hash Map to store the numbers you have seen so far.",
+    "starterCode": {
+      "python": "def two_sum(nums, target):\n    # Write your code here\n    pass\n",
+      "javascript": "function twoSum(nums, target) {\n    // Write your code here\n}\n",
+      "cpp": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nvector<int> twoSum(vector<int>& nums, int target) {\n    // Write your code here\n    return {};\n}\n"
+    }
+  },
+  {
+    "id": 2,
+    "title": "Reverse Linked List",
+    "difficulty": "Easy",
+    "points": 100,
+    "description": "Given the `head` of a singly linked list, reverse the list, and return the reversed list.",
+    "hint": "Use three pointers: prev, curr, and next.",
+    "starterCode": {
+      "python": "# class ListNode:\n#     def __init__(self, val=0, next=None):\n#         self.val = val\n#         self.next = next\n\ndef reverse_list(head):\n    # Write your code here\n    pass\n",
+      "javascript": "/*\n * function ListNode(val, next) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.next = (next===undefined ? null : next)\n * }\n */\n\nfunction reverseList(head) {\n    // Write your code here\n}\n",
+      "cpp": "/**\n * struct ListNode {\n *     int val;\n *     ListNode *next;\n *     ListNode(int x) : val(x), next(NULL) {}\n * };\n */\n\nListNode* reverseList(ListNode* head) {\n    // Write your code here\n    return NULL;\n}\n"
+    }
+  }
+]

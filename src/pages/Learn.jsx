@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeEditor from '../components/CodeEditor';
-import { tracks } from '../data/lessons';
+
+const API_BASE = 'http://localhost:5000/api';
 
 const difficultyBadge = {
   Beginner:     'bg-green-100 text-green-700',
@@ -10,8 +11,24 @@ const difficultyBadge = {
 };
 
 export default function Learn() {
-  const [activeTrack, setActiveTrack]   = useState(tracks[0]);
-  const [activeLesson, setActiveLesson] = useState(tracks[0].lessons[0]);
+  const [tracks, setTracks] = useState([]);
+  const [activeTrack, setActiveTrack]   = useState(null);
+  const [activeLesson, setActiveLesson] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/lessons`)
+      .then(r => r.json())
+      .then(data => {
+        setTracks(data);
+        if (data.length > 0) {
+            setActiveTrack(data[0]);
+            setActiveLesson(data[0].lessons[0]);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
   const [tab, setTab] = useState('theory'); // 'theory' | 'code' | 'challenge'
   const [completedLessons, setCompletedLessons] = useState(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(true);

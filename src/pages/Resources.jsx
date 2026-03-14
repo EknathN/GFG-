@@ -1,8 +1,20 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ResourceCard from '../components/ResourceCard';
-import { resources } from '../data/resources';
+
+const API_BASE = 'http://localhost:5000/api';
 
 export default function Resources() {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/resources`)
+      .then(r => r.json())
+      .then(setResources)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
   return (
     <div className="min-h-screen bg-gray-50 pt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
