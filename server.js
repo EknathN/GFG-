@@ -41,7 +41,7 @@ async function writeData(file, data) {
 }
 
 // Generic CRUD endpoints
-const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice'];
+const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice', 'messages'];
 
 ENTITIES.forEach(entity => {
   // GET all

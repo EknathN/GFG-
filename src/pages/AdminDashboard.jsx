@@ -12,13 +12,14 @@ const TABS = [
   { id: 'resources', title: 'Resources', icon: '📚' },
   { id: 'lessons', title: 'Lessons', icon: '🎓' },
   { id: 'practice', title: 'Practice', icon: '🎯' },
+  { id: 'messages', title: 'Messages', icon: '📧' },
 ];
 
 export default function AdminDashboard() {
   const { currentUser } = useAuth();
   const [activeTab, setActiveTab ] = useState('overview');
   const [data, setData] = useState({
-    users: [], blogs: [], events: [], resources: [], leaderboard: [], lessons: [], practice: []
+    users: [], blogs: [], events: [], resources: [], leaderboard: [], lessons: [], practice: [], messages: []
   });
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState(null);
@@ -32,7 +33,7 @@ export default function AdminDashboard() {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const entities = ['users', 'blogs', 'events', 'resources', 'leaderboard', 'lessons', 'practice'];
+      const entities = ['users', 'blogs', 'events', 'resources', 'leaderboard', 'lessons', 'practice', 'messages'];
       const results = await Promise.all(entities.map(e => fetch(`${API_BASE}/${e}`).then(r => r.json())));
       const newData = {};
       entities.forEach((e, i) => newData[e] = results[i]);
@@ -208,6 +209,34 @@ export default function AdminDashboard() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </motion.div>
+            )}
+
+            {activeTab === 'messages' && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} key="messages">
+                    <h2 className="text-xl font-bold mb-6">Member Queries & Messages</h2>
+                    <div className="space-y-4">
+                        {data.messages.length === 0 ? (
+                            <p className="text-gray-500 text-center py-10">No messages yet.</p>
+                        ) : (
+                            data.messages.map(msg => (
+                                <div key={msg.id} className="bg-white/5 border border-white/10 rounded-2xl p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="font-bold text-lg">{msg.subject}</h3>
+                                            <p className="text-sm text-gfg-green">From: {msg.name} ({msg.email})</p>
+                                        </div>
+                                        <button onClick={() => handleDelete('messages', msg.id)} className="text-gray-500 hover:text-red-400 transition-colors">🗑️</button>
+                                    </div>
+                                    <p className="text-gray-300 text-sm bg-white/5 p-4 rounded-xl mb-3 leading-relaxed">{msg.message}</p>
+                                    <div className="flex justify-between items-center text-[10px] text-gray-500">
+                                        <span>Sent on: {new Date(msg.timestamp).toLocaleString()}</span>
+                                        <span className="bg-gfg-green/20 text-gfg-green px-2 py-0.5 rounded-full uppercase font-bold tracking-tighter">Query</span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </motion.div>
             )}

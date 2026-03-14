@@ -20,10 +20,24 @@ export default function Contact() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    await new Promise((r) => setTimeout(r, 1200));
-    console.log('Query submitted:', data);
-    setSubmitted(true);
-    reset();
+    try {
+      const response = await fetch('http://localhost:5000/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          timestamp: new Date().toISOString(),
+          status: 'unread'
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to send message');
+
+      setSubmitted(true);
+      reset();
+    } catch (err) {
+      alert('Failed to send message: ' + err.message);
+    }
   };
 
   return (

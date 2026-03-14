@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import HeroBackground3D from '../components/HeroBackground3D';
 
 const stats = [
   { label: 'Active Members', value: '200+', icon: '👥' },
@@ -52,20 +53,11 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-gray-900 via-gray-900 to-gfg-green-dark">
-        {/* Gradient orbs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-gfg-green/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 -left-20 w-72 h-72 bg-gfg-green/10 rounded-full blur-3xl" />
-          {/* Grid pattern */}
-          <div
-            className="absolute inset-0 opacity-5"
-            style={{
-              backgroundImage: 'linear-gradient(#2F8D46 1px, transparent 1px), linear-gradient(90deg, #2F8D46 1px, transparent 1px)',
-              backgroundSize: '60px 60px',
-            }}
-          />
-        </div>
+      <section className="relative min-h-screen flex items-center overflow-hidden bg-gray-900">
+        <HeroBackground3D />
+        
+        {/* Subtle overlay to ensure text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-gray-900/20 to-gray-900 pointer-events-none" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-28 grid md:grid-cols-2 gap-12 items-center">
           {/* Left */}
