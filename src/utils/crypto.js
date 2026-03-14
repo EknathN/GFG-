@@ -96,7 +96,7 @@ function base64ToUint8Array(b64) {
 }
 
 // ── Simple Backend API helpers (users stored on server) ────────────────────
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export async function loadUsers() {
   const res = await fetch(`${API_BASE}/users`);
