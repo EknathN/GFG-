@@ -30,7 +30,7 @@ export default function App() {
               <Route path="/contact"  element={<Contact />} />
               <Route path="/login"    element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
 
               {/* Protected routes — require login */}
               <Route path="/events"    element={<ProtectedRoute><Events /></ProtectedRoute>} />
@@ -40,7 +40,7 @@ export default function App() {
               <Route path="/learn"     element={<ProtectedRoute><Learn /></ProtectedRoute>} />
               
               {/* Admin only */}
-              <Route path="/admin"     element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin-dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
