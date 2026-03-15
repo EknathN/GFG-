@@ -6,6 +6,14 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
   const { currentUser, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedRoute:', { 
+    path: location.pathname, 
+    isAuthenticated, 
+    loading, 
+    userRole: currentUser?.role,
+    adminOnly 
+  });
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -18,7 +26,7 @@ export default function ProtectedRoute({ children, adminOnly = false }) {
   }
 
   if (!isAuthenticated) {
-    const redirectPath = adminOnly ? '/admin/login' : '/login';
+    const redirectPath = adminOnly ? '/admin-login' : '/login';
     return <Navigate to={redirectPath} state={{ from: location.pathname }} replace />;
   }
 

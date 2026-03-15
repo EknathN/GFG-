@@ -17,6 +17,17 @@ const DATA_DIR = path.join(__dirname, 'server-data');
 const SUPABASE_URL  = process.env.VITE_SUPABASE_URL  || process.env.SUPABASE_URL;
 const SUPABASE_KEY  = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
+const SCHEMA = {
+  users: ['id', 'name', 'email', 'regNo', 'phone', 'sem', 'role', 'approved', 'createdAt', 'salt', 'passwordHash', 'idCardPhoto', 'bio', 'experience', 'certifications', 'github', 'linkedin', 'skills'],
+  events: ['id', 'title', 'date', 'type', 'status', 'description', 'image'],
+  blogs: ['id', 'title', 'author', 'date', 'category', 'excerpt', 'content', 'image', 'tags'],
+  resources: ['id', 'title', 'category', 'type', 'link', 'description'],
+  leaderboard: ['id', 'rank', 'name', 'regNo', 'points', 'avatar'],
+  messages: ['id', 'name', 'email', 'subject', 'message', 'createdAt'],
+  practice: ['id', 'title', 'difficulty', 'tags', 'description', 'link'],
+  lessons: ['id', 'title', 'category', 'content']
+};
+
 let supabase = null;
 if (SUPABASE_URL && SUPABASE_KEY) {
   supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -45,16 +56,31 @@ async function sbGetAll(table) {
 }
 
 async function sbCreate(table, body) {
-  const { data, error } = await supabase.from(table).insert([body]).select().single();
-  if (error) throw new Error(error.message);
+  // Filter body to only include valid columns
+  const cleanBody = {};
+  if (SCHEMA[table]) {
+    SCHEMA[table].forEach(col => { if (body[col] !== undefined) cleanBody[col] = body[col]; });
+  } else { Object.assign(cleanBody, body); }
+
+  const { data, error } = await supabase.from(table).insert([cleanBody]).select().single();
+  if (error) {
+    console.error(`❌ Supabase Insert Error [${table}]:`, error);
+    throw new Error(error.message);
+  }
   return data;
 }
 
 async function sbUpdate(table, id, body) {
+  // Filter body to only include valid columns
+  const cleanBody = {};
+  if (SCHEMA[table]) {
+    SCHEMA[table].forEach(col => { if (body[col] !== undefined) cleanBody[col] = body[col]; });
+  } else { Object.assign(cleanBody, body); }
+
   // Try matching by id column first, then by rank
-  let { data, error } = await supabase.from(table).update(body).eq('id', id).select().single();
+  let { data, error } = await supabase.from(table).update(cleanBody).eq('id', id).select().single();
   if (error || !data) {
-    ({ data, error } = await supabase.from(table).update(body).eq('rank', id).select().single());
+    ({ data, error } = await supabase.from(table).update(cleanBody).eq('rank', id).select().single());
   }
   if (error) throw new Error(error.message);
   if (!data) throw new Error('Item not found');
@@ -79,9 +105,9 @@ async function getAll(entity) {
 }
 
 async function createOne(entity, body) {
-  if (supabase) return sbCreate(entity, body);
+  const newItem = { id: body.id || Date.now(), ...body };
+  if (supabase) return sbCreate(entity, newItem);
   const data = await readJSON(entity);
-  const newItem = { id: Date.now(), ...body };
   data.push(newItem);
   await writeJSON(entity, data);
   return newItem;
@@ -112,8 +138,13 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use((req, _, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log(`[${new Date().toLocaleTimeString()}] ${req.method} ${req.url}`);
   next();
+});
+
+app.get('/ping', (req, res) => res.send('pong'));
+app.get('/debug-health', (req, res) => {
+  res.json({ ok: true, supabase: !!supabase, time: new Date().toISOString() });
 });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -126,8 +157,13 @@ ENTITIES.forEach(entity => {
   });
 
   app.post(`/api/${entity}`, async (req, res) => {
-    try { res.status(201).json(await createOne(entity, req.body)); }
-    catch (e) { res.status(500).json({ error: e.message }); }
+    try { 
+      const result = await createOne(entity, req.body);
+      res.status(201).json(result); 
+    } catch (e) { 
+      console.error(`❌ POST /api/${entity} Error:`, e);
+      res.status(500).json({ error: e.message }); 
+    }
   });
 
   app.put(`/api/${entity}/:id`, async (req, res) => {
@@ -148,7 +184,7 @@ app.post('/api/seed', async (req, res) => {
   
   // Valid columns per table based on schema
   const schema = {
-    users: ['id', 'name', 'email', 'regNo', 'phone', 'sem', 'role', 'approved', 'createdAt', 'salt', 'passwordHash', 'idCardPhoto'],
+    users: ['id', 'name', 'email', 'regNo', 'phone', 'sem', 'role', 'approved', 'createdAt', 'salt', 'passwordHash', 'idCardPhoto', 'bio', 'experience', 'certifications', 'github', 'linkedin', 'skills'],
     events: ['id', 'title', 'date', 'type', 'status', 'description', 'image'],
     blogs: ['id', 'title', 'author', 'date', 'category', 'excerpt', 'content', 'image', 'tags'],
     resources: ['id', 'title', 'category', 'type', 'link', 'description'],
@@ -220,7 +256,7 @@ app.get('/api/health', (req, res) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✅ Server on http://localhost:${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`✅ Server on http://127.0.0.1:${PORT}`);
   console.log(`🗄️  Storage: ${supabase ? 'Supabase (PostgreSQL)' : 'JSON Files (fallback)'}`);
 });

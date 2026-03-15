@@ -129,7 +129,11 @@ export default function Navbar() {
                         <p className="text-xs text-gray-400">{currentUser?.regNo}</p>
                         <p className="text-xs text-gray-400">{currentUser?.dept} · {currentUser?.section} · {currentUser?.year}</p>
                       </div>
-                      <div className="p-2">
+                      <div className="p-2 space-y-1">
+                        <Link to="/profile" onClick={() => setShowDropdown(false)}
+                          className="w-full flex items-center px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-black rounded-xl transition-all font-semibold">
+                          <span>👤 View Profile</span>
+                        </Link>
                         <button onClick={handleLogout}
                           className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-black rounded-xl transition-all font-semibold">
                           <span>🚪 Sign Out</span>
@@ -209,6 +213,8 @@ export default function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+
     </nav>
   );
 }

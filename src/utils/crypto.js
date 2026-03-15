@@ -1,5 +1,7 @@
 // ── Web Crypto API utilities ──────────────────────────────────────────────────
 // All operations are async, browser-native, no external libraries needed.
+export const FIXED_ADMIN_SALT = 'GFG_ADMIN_SALT_2026';
+export const FIXED_ADMIN_HASH = 'XBsquFvzupHiAltwWVZF+YpSXYTr27GG4A/+BWbEQmg='; // password: admin
 
 /** Generate a random Base64 salt */
 export function generateSalt(bytes = 16) {
@@ -126,11 +128,12 @@ export async function registerUser(userData) {
     sem: userData.sem,
     idCardPhoto: userData.idCardPhoto,  // base64
     email: userData.email,
+    phone: userData.phone,
     salt,
     passwordHash,
     createdAt: new Date().toISOString(),
     approved: true, // Default to approved for now as per current logic
-    role: users.length === 0 ? 'admin' : 'member', // First user is admin
+    role: userData.regNo === '2117250040059' ? 'admin' : 'member',
     points: 0,
   };
 

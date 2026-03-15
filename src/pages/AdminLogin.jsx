@@ -57,7 +57,11 @@ function ParticleCanvas() {
 }
 
 export default function AdminLogin() {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm({
+    defaultValues: {
+      regNo: '2117250040059'
+    }
+  });
   const { login }    = useAuth();
   const navigate     = useNavigate();
   const location     = useLocation();
@@ -165,15 +169,27 @@ export default function AdminLogin() {
           </div>
 
           <div className="p-8 pb-10">
-            {/* Logo */}
+            {/* Logo Section */}
             <div className="text-center mb-8">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-4 bg-white rounded-2xl px-5 py-3 border border-gray-100 mb-6 shadow-xl"
+              >
+                <img src="/gfg-logo.png" alt="GeeksforGeeks" className="h-10 w-auto object-contain" />
+                <div className="h-8 w-px bg-gray-200" />
+                <img src="/rit-logo.png" alt="RIT" className="h-9 w-auto object-contain" />
+              </motion.div>
+
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', stiffness: 180, damping: 15, delay: 0.3 }}
-                className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5 relative"
+                className="hidden items-center justify-center w-20 h-20 rounded-2xl mb-5 relative mx-auto"
                 style={{ background: 'linear-gradient(135deg, rgba(47,170,90,0.2), rgba(47,170,90,0.05))', border: '1px solid rgba(47,170,90,0.3)', boxShadow: '0 0 40px rgba(47,170,90,0.2)' }}
               >
+                {/* Shield Icon remains as decorative or backup */}
                 <div className="absolute inset-0 rounded-2xl"
                      style={{ background: 'conic-gradient(from 0deg, transparent, rgba(47,170,90,0.3), transparent)', animation: 'spin 4s linear infinite', opacity: 0.5 }} />
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
@@ -223,28 +239,28 @@ export default function AdminLogin() {
 
             {!loginSuccess && (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-                {/* Admin ID */}
+                {/* Admin Role Identifier (Pre-filled & Read-only) */}
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
                   <label className="block text-xs font-bold text-green-400/80 mb-2 font-mono uppercase tracking-wider">
-                    Admin ID
+                    Portal Identity
                   </label>
                   <div className="relative">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400/40">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400/60">
                       <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd"/>
                       </svg>
                     </div>
                     <input
-                      {...register('regNo', { required: 'Admin ID is required' })}
-                      className="w-full pl-12 pr-4 py-3.5 rounded-xl text-white placeholder-gray-600 font-mono text-sm transition-all outline-none"
-                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)' }}
-                      onFocus={e => { e.target.style.borderColor = 'rgba(47,170,90,0.5)'; e.target.style.boxShadow = '0 0 0 3px rgba(47,170,90,0.1)'; }}
-                      onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
-                      placeholder="e.g. 2117250040059"
-                      disabled={isLocked || loading}
+                      {...register('regNo')}
+                      type="hidden"
                     />
+                    <div
+                      className="w-full pl-12 pr-4 py-3.5 rounded-xl text-white/50 font-mono text-sm border border-white/5 flex items-center cursor-not-allowed"
+                      style={{ background: 'rgba(255,255,255,0.01)', backdropFilter: 'blur(10px)' }}
+                    >
+                      ADMIN
+                    </div>
                   </div>
-                  {errors.regNo && <p className="mt-1.5 text-red-400 text-xs font-mono">{errors.regNo.message}</p>}
                 </motion.div>
 
                 {/* Secret Key */}
@@ -260,6 +276,7 @@ export default function AdminLogin() {
                     </div>
                     <input
                       type={showPass ? 'text' : 'password'}
+                      autoFocus
                       {...register('password', { required: 'Secret key is required' })}
                       className="w-full pl-12 pr-14 py-3.5 rounded-xl text-white placeholder-gray-600 font-mono text-sm transition-all outline-none"
                       style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(10px)' }}

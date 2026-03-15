@@ -16,12 +16,20 @@ export function AuthProvider({ children }) {
     try {
       const token    = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
       const userJson = sessionStorage.getItem(USER_KEY)    || localStorage.getItem(USER_KEY);
+      
+      console.log('AuthContext: Checking for stored session...', { hasToken: !!token, hasUser: !!userJson });
       if (token && userJson) {
-        setCurrentUser(JSON.parse(userJson));
+        const user = JSON.parse(userJson);
+        console.log('AuthContext: Session found for:', user.regNo, 'Role:', user.role);
+        setCurrentUser(user);
+      } else {
+        console.log('AuthContext: No session found.');
       }
-    } catch {
-      // corrupted session — clear it
+    } catch (e) {
+      console.error('AuthContext: Session restoration failed', e);
       sessionStorage.clear();
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(USER_KEY);
     } finally {
       setLoading(false);
     }
@@ -78,11 +86,34 @@ export function AuthProvider({ children }) {
       throw new Error(err.message || "Failed to add points");
     }
   }, [currentUser]);
+  
+  const updateUser = useCallback(async (updates) => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error('Failed to update profile');
+      const updatedUser = await res.json();
+      
+      // Update storage
+      const store = localStorage.getItem(SESSION_KEY) ? localStorage : sessionStorage;
+      store.setItem(USER_KEY, JSON.stringify(updatedUser));
+      
+      setCurrentUser(updatedUser);
+      return updatedUser;
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  }, [currentUser]);
 
   const isAuthenticated = !!currentUser;
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, loading, login, logout, deleteAccount, addPoints }}>
+    <AuthContext.Provider value={{ currentUser, isAuthenticated, loading, login, logout, deleteAccount, addPoints, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

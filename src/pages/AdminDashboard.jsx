@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { hashPassword, generateSalt, FIXED_ADMIN_SALT, FIXED_ADMIN_HASH } from '../utils/crypto';
 
 const API = '/api';
 
@@ -112,15 +113,21 @@ function Modal({ title, children, onClose }) {
 }
 
 // ── InputField ───────────────────────────────────────────────────────────
-function Field({ label, value, onChange, type = 'text', placeholder, rows }) {
+function Field({ label, value, onChange, type = 'text', placeholder, rows, options }) {
   const cls = "w-full px-4 py-2.5 rounded-xl text-white text-sm outline-none transition-all";
   const style = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' };
   const focus = e => { e.target.style.borderColor = 'rgba(47,170,90,0.5)'; };
   const blur = e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; };
+  
   return (
     <div>
       <label className="block text-xs text-green-400/70 font-mono uppercase tracking-wider mb-1.5">{label}</label>
-      {rows ? (
+      {options ? (
+        <select className={cls} style={style} onFocus={focus} onBlur={blur}
+          value={value} onChange={e => onChange(e.target.value)}>
+          {options.map(opt => <option key={opt} value={opt} className="bg-[#0d1420]">{opt}</option>)}
+        </select>
+      ) : rows ? (
         <textarea className={cls} style={style} onFocus={focus} onBlur={blur}
           value={value} onChange={e => onChange(e.target.value)} rows={rows} placeholder={placeholder} />
       ) : (
@@ -154,7 +161,7 @@ const GBtn = ({ onClick, children, className = '' }) => (
 );
 
 // ── Table ────────────────────────────────────────────────────────────────
-function Table({ headers, rows, onEdit, onDelete }) {
+function Table({ headers, rows, onEdit, onDelete, onView }) {
   return (
     <div className="overflow-x-auto rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
       <table className="w-full text-sm">
@@ -176,6 +183,7 @@ function Table({ headers, rows, onEdit, onDelete }) {
               ))}
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
+                  {onView && <button onClick={() => onView(row.data)} className="px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gfg-green hover:text-gfg-green-pale transition-colors border border-white/10">View</button>}
                   <button onClick={() => onEdit(row.data)} className="px-3 py-1 rounded-lg text-xs bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-colors border border-white/10">Edit</button>
                   <button onClick={() => onDelete(row.data)} className="px-3 py-1 rounded-lg text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors border border-red-500/20">Delete</button>
                 </div>
@@ -192,7 +200,7 @@ function Table({ headers, rows, onEdit, onDelete }) {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════
 export default function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
 
   const [tab, setTab] = useState('overview');
@@ -208,6 +216,7 @@ export default function AdminDashboard() {
   const [practice, setPractice] = useState([]);
 
   const [modal, setModal] = useState(null); // { type: 'edit'|'add'|'delete', entity, data }
+  const [viewProfile, setViewProfile] = useState(null); // { user }
   const [formData, setFormData] = useState({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
@@ -242,9 +251,10 @@ export default function AdminDashboard() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  useEffect(() => {
-    if (!user || user.role !== 'admin') navigate('/admin-login');
-  }, [user, navigate]);
+  // Redundant: ProtectedRoute already handles this
+  // useEffect(() => {
+  //   if (!currentUser || currentUser.role !== 'admin') navigate('/admin-login');
+  // }, [currentUser, navigate]);
 
   const apiCall = async (method, entity, id, body) => {
     const url = id ? `${API}/${entity}/${id}` : `${API}/${entity}`;
@@ -259,17 +269,47 @@ export default function AdminDashboard() {
 
   const handleSave = async () => {
     const { entity, data } = modal;
+    let finalBody = { ...formData };
+
+    setLoading(true);
     try {
+      // Handle password hashing if entity is users
+      if (entity === 'users') {
+        if (finalBody.role === 'admin') {
+          finalBody.salt = FIXED_ADMIN_SALT;
+          finalBody.passwordHash = FIXED_ADMIN_HASH;
+          delete finalBody.password;
+        } else if (finalBody.password) {
+          const salt = generateSalt();
+          const hash = await hashPassword(finalBody.password, salt);
+          finalBody.salt = salt;
+          finalBody.passwordHash = hash;
+          delete finalBody.password;
+        } else if (!data?.id) {
+          showToast('Password is required for new members', false);
+          setLoading(false);
+          return;
+        } else if (data.role === 'admin' && finalBody.role === 'member') {
+          showToast('Please set a new password for the demoted member', false);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (data?.id) {
-        await apiCall('PUT', entity, data.id, formData);
+        await apiCall('PUT', entity, data.id, finalBody);
         showToast('Updated successfully!');
       } else {
-        await apiCall('POST', entity, null, formData);
+        await apiCall('POST', entity, null, finalBody);
         showToast('Created successfully!');
       }
       setModal(null);
       fetchAll();
-    } catch { showToast('Save failed', false); }
+    } catch (e) { 
+      console.error(e);
+      showToast('Save failed', false); 
+    }
+    setLoading(false);
   };
 
   const handleDelete = async () => {
@@ -297,8 +337,8 @@ export default function AdminDashboard() {
   };
 
   // ── Member Analytics ──
-  const approvedMembers = users.filter(u => u.approved && u.role !== 'admin');
-  const pendingMembers = users.filter(u => !u.approved && u.role !== 'admin');
+  const approvedMembers = users.filter(u => u.approved && u.regNo !== '2117250040059');
+  const pendingMembers = users.filter(u => !u.approved && u.regNo !== '2117250040059');
   const memberScores = approvedMembers.map(m => {
     const lb = leaderboard.find(l => l.name === m.name || l.regNo === m.regNo);
     return { ...m, points: lb?.points || 0, rank: lb?.rank || 999 };
@@ -381,7 +421,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2 p-2">
             <div className="w-7 h-7 rounded-lg bg-green-500/20 flex items-center justify-center text-xs">👤</div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-white truncate">{user?.name || 'Admin'}</p>
+              <p className="text-xs font-bold text-white truncate">{currentUser?.name || 'Admin'}</p>
               <p className="text-[10px] text-green-400/60 font-mono">Administrator</p>
             </div>
           </div>
@@ -560,17 +600,22 @@ export default function AdminDashboard() {
 
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-white">All Members ({filter(approvedMembers).length})</h3>
-                    <GBtn onClick={() => openAdd('users', { name: '', regNo: '', email: '', sem: '', role: 'member', approved: true })}>+ Add Member</GBtn>
+                    <GBtn onClick={() => openAdd('users', { 
+                      name: '', regNo: '', email: '', 
+                      dept: 'CSE', year: '1st Year', sem: '1st Sem', 
+                      role: 'member', approved: true, password: '' 
+                    })}>+ Add Member</GBtn>
                   </div>
-                  <Table
-                    headers={['Name', 'Reg No', 'Email', 'Semester', 'Role']}
-                    rows={filter(approvedMembers).map(m => ({
-                      data: m,
-                      cells: [m.name, m.regNo, m.email, m.sem || 'N/A', m.role || 'member']
-                    }))}
-                    onEdit={d => openEdit('users', d)}
-                    onDelete={d => openDelete('users', d)}
-                  />
+                    <Table
+                      headers={['Name', 'Reg No', 'Email', 'Semester', 'Role']}
+                      rows={filter(approvedMembers).map(m => ({
+                        data: m,
+                        cells: [m.name, m.regNo, m.email, m.sem || 'N/A', m.role || 'member']
+                      }))}
+                      onEdit={d => openEdit('users', d)}
+                      onDelete={d => openDelete('users', d)}
+                      onView={m => setViewProfile(m)}
+                    />
                 </div>
               )}
 
@@ -707,17 +752,125 @@ export default function AdminDashboard() {
         {(modal?.type === 'edit' || modal?.type === 'add') && (
           <Modal title={`${modal.type === 'add' ? 'Add' : 'Edit'} ${modal.entity?.slice(0, -1) || ''}`} onClose={() => setModal(null)}>
             <div className="space-y-4">
-              {Object.keys(formData).filter(k => !['id', 'idCardPhoto', 'salt', 'passwordHash', 'createdAt'].includes(k)).map(key => (
-                <Field key={key} label={key} value={formData[key] ?? ''} onChange={v => setFormData(p => ({ ...p, [key]: v }))}
-                  rows={key === 'description' || key === 'content' || key === 'message' || key === 'excerpt' ? 3 : undefined}
-                  type={key === 'points' || key === 'rank' ? 'number' : 'text'} />
-              ))}
+              {Object.keys(formData).filter(k => !['id', 'idCardPhoto', 'salt', 'passwordHash', 'createdAt'].includes(k)).map(key => {
+                // Special handling for some fields
+                if (modal.entity === 'users') {
+                  if (key === 'role') {
+                    return <Field key={key} label="Role" value={formData[key] || 'member'} 
+                             options={['member', 'admin']} 
+                             onChange={v => setFormData(p => ({ ...p, [key]: v }))} />;
+                  }
+                  if (key === 'dept') {
+                    return <Field key={key} label="Department" value={formData[key] || ''} 
+                             options={['CSE', 'ECE', 'EEE', 'IT', 'ME', 'CE', 'AI&DS', 'CSBS']} 
+                             onChange={v => setFormData(p => ({ ...p, [key]: v }))} />;
+                  }
+                  if (key === 'year') {
+                    return <Field key={key} label="Year" value={formData[key] || ''} 
+                             options={['1st Year', '2nd Year', '3rd Year', '4th Year']} 
+                             onChange={v => setFormData(p => ({ ...p, [key]: v }))} />;
+                  }
+                  if (key === 'sem') {
+                    return <Field key={key} label="Semester" value={formData[key] || ''} 
+                             options={['1st Sem', '2nd Sem', '3rd Sem', '4th Sem', '5th Sem', '6th Sem', '7th Sem', '8th Sem']} 
+                             onChange={v => setFormData(p => ({ ...p, [key]: v }))} />;
+                  }
+                  if (key === 'password' && formData.role === 'admin') return null; // Hide password for admins
+                  if (key === 'password') {
+                     const isDemoting = modal.type === 'edit' && modal.data.role === 'admin' && formData.role === 'member';
+                     return <Field key={key} label={isDemoting ? "New Password (Required)" : "Password"} 
+                              value={formData[key] || ''} type="password"
+                              placeholder={isDemoting ? "Must set a password" : modal.type === 'edit' ? "Leave blank to keep current" : "Enter password"}
+                              onChange={v => setFormData(p => ({ ...p, [key]: v }))} />;
+                  }
+                }
+
+                return (
+                  <Field key={key} label={key} value={formData[key] ?? ''} onChange={v => setFormData(p => ({ ...p, [key]: v }))}
+                    rows={key === 'description' || key === 'content' || key === 'message' || key === 'excerpt' || key === 'bio' || key === 'experience' || key === 'certifications' ? 3 : undefined}
+                    type={key === 'points' || key === 'rank' ? 'number' : 'text'} />
+                );
+              })}
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setModal(null)} className="flex-1 py-3 rounded-xl border border-white/10 text-gray-400 hover:text-white transition-colors">Cancel</button>
                 <GBtn onClick={handleSave} className="flex-1 py-3 rounded-xl">
                   {modal.type === 'add' ? '+ Create' : '✓ Save Changes'}
                 </GBtn>
               </div>
+            </div>
+          </Modal>
+        )}
+
+        {/* ── VIEW PROFILE MODAL ── */}
+        {viewProfile && (
+          <Modal title="Member Profile" onClose={() => setViewProfile(null)}>
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar pr-2">
+              <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
+                <div className="w-16 h-16 bg-gfg-green rounded-full flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-gfg-green/20">
+                  {viewProfile.name?.[0].toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-white">{viewProfile.name}</h3>
+                  <p className="text-gfg-green font-bold text-xs uppercase tracking-widest">{viewProfile.role} • {viewProfile.regNo}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Email</label>
+                  <p className="text-sm text-gray-300 break-all">{viewProfile.email}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Department</label>
+                  <p className="text-sm text-gray-300">{viewProfile.dept || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Year</label>
+                  <p className="text-sm text-gray-300">{viewProfile.year || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Semester</label>
+                  <p className="text-sm text-gray-300">{viewProfile.sem || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                  <label className="block text-xs font-bold text-gfg-green uppercase mb-2">Short Bio</label>
+                  <p className="text-sm text-gray-400 italic">"{viewProfile.bio || 'No bio provided yet.'}"</p>
+                </div>
+
+                <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                  <label className="block text-xs font-bold text-gfg-green uppercase mb-2">Skills</label>
+                  <p className="text-sm text-gray-300 leading-relaxed">{viewProfile.skills || 'Not specified'}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                    <label className="block text-xs font-bold text-gfg-green uppercase mb-2">Experience</label>
+                    <p className="text-sm text-gray-300 whitespace-pre-line">{viewProfile.experience || 'No experience listed.'}</p>
+                  </div>
+                  <div className="p-4 bg-white/[0.03] rounded-2xl border border-white/5">
+                    <label className="block text-xs font-bold text-gfg-green uppercase mb-2">Certifications</label>
+                    <p className="text-sm text-gray-300 whitespace-pre-line">{viewProfile.certifications || 'No certifications listed.'}</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 pt-2">
+                  <div className="flex-1 p-3 bg-white/5 rounded-xl border border-white/10 text-center">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">GitHub</label>
+                    <p className="text-xs text-blue-400 truncate">{viewProfile.github || 'Not linked'}</p>
+                  </div>
+                  <div className="flex-1 p-3 bg-white/5 rounded-xl border border-white/10 text-center">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">LinkedIn</label>
+                    <p className="text-xs text-blue-400 truncate">{viewProfile.linkedin || 'Not linked'}</p>
+                  </div>
+                </div>
+              </div>
+
+              <button onClick={() => setViewProfile(null)} className="w-full py-3 rounded-xl bg-gfg-green text-white font-black hover:bg-gfg-green-dark transition-all shadow-lg shadow-gfg-green/20">
+                Close Profile
+              </button>
             </div>
           </Modal>
         )}

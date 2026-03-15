@@ -15,6 +15,7 @@ import Register from './pages/Register';
 import Practice from './pages/Practice';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
+import Profile from './pages/Profile';
 import './index.css';
 
 export default function App() {
@@ -41,6 +42,9 @@ export default function App() {
               
               {/* Admin only */}
               <Route path="/admin-dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+              
+              {/* Profile */}
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />

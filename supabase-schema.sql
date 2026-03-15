@@ -11,13 +11,22 @@ CREATE TABLE users (
   email TEXT UNIQUE NOT NULL,
   "regNo" TEXT UNIQUE NOT NULL,
   phone TEXT,
+  dept TEXT,
+  section TEXT,
+  year TEXT,
   sem TEXT,
   role TEXT DEFAULT 'member',
   approved BOOLEAN DEFAULT true,
   "createdAt" TEXT,
   salt TEXT,
   "passwordHash" TEXT,
-  "idCardPhoto" TEXT
+  "idCardPhoto" TEXT,
+  bio TEXT,
+  experience TEXT,
+  certifications TEXT,
+  github TEXT,
+  linkedin TEXT,
+  skills TEXT
 );
 
 -- 2. Events Table
