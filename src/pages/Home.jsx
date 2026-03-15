@@ -107,7 +107,7 @@ export default function Home() {
             </motion.p>
 
             <motion.div variants={item} className="flex flex-wrap gap-4">
-              <Link to="/contact" className="btn-primary text-base px-8 py-3.5 shadow-lg shadow-gfg-green/30">
+              <Link to="/register" className="btn-primary text-base px-8 py-3.5 shadow-lg shadow-gfg-green/30">
                 Join the Club 🚀
               </Link>
               <Link to="/events" className="btn-outline border-gray-500 text-gray-300 hover:border-gfg-green hover:text-white hover:bg-gfg-green/10 text-base px-8 py-3.5">
@@ -296,7 +296,7 @@ export default function Home() {
             }} />
             <h3 className="text-2xl md:text-3xl font-black mb-2 relative">Ready to level up your coding journey?</h3>
             <p className="text-gfg-green-pale mb-6 relative">Join 200+ students already in the club.</p>
-            <Link to="/contact" className="bg-white text-gfg-green font-bold px-8 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 inline-block relative">
+            <Link to="/register" className="bg-white text-gfg-green font-bold px-8 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-200 inline-block relative">
               Join Club Today →
             </Link>
           </motion.div>
