@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
-const API = 'http://localhost:3001/api';
+const API = '/api';
 
 // ── Mini Bar Chart ──────────────────────────────────────────────────────
 function BarChart({ data, color = '#2faa5a', label }) {
