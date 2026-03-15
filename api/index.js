@@ -29,9 +29,20 @@ const SCHEMA = {
   lessons: ['id', 'title', 'category', 'content']
 };
 
+console.log('Environment Check:', {
+  hasUrl: !!SUPABASE_URL,
+  hasAnonKey: !!process.env.VITE_SUPABASE_ANON_KEY,
+  hasServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
+  env: process.env.NODE_ENV
+});
+
 let supabase = null;
-if (SUPABASE_URL && SUPABASE_KEY) {
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+if (SUPABASE_URL && (process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY)) {
+  const KEY = process.env.SUPABASE_SERVICE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  supabase = createClient(SUPABASE_URL, KEY);
+  console.log('✅ Supabase client initialized via ' + (process.env.SUPABASE_SERVICE_KEY ? 'Service Key' : 'Anon Key'));
+} else {
+  console.error('❌ Supabase keys missing in Vercel environment variables');
 }
 
 // ── JSON fallback helpers ─────────────────────────────────────────────────────
@@ -94,12 +105,21 @@ const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'use
 
 async function getAll(entity) {
   if (supabase) return sbGetAll(entity);
+  if (process.env.VERCEL) {
+     console.error(`❌ Cannot load ${entity}: Supabase not configured`);
+     return []; // Still return empty to prevent hard crash on load
+  }
   return readJSON(entity);
 }
 
 async function createOne(entity, body) {
   const newItem = { id: body.id || Date.now(), ...body };
   if (supabase) return sbCreate(entity, newItem);
+  
+  if (process.env.VERCEL) {
+     throw new Error('Database not connected. Please add VITE_SUPABASE_URL and SUPABASE_SERVICE_KEY to your Vercel Environment Variables.');
+  }
+
   const data = await readJSON(entity);
   data.push(newItem);
   await writeJSON(entity, data);
