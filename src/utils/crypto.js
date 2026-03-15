@@ -143,7 +143,10 @@ export async function registerUser(userData) {
     body: JSON.stringify(newUser),
   });
 
-  if (!res.ok) throw new Error('Failed to register user on server.');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to register user on server.');
+  }
   return res.json();
 }
 
