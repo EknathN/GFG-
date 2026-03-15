@@ -149,41 +149,50 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-app.get('/api/ping', (req, res) => res.send('pong'));
-app.get('/api/debug-health', (req, res) => {
-  res.json({ ok: true, supabase: !!supabase, vercel: true, time: new Date().toISOString() });
+const router = express.Router();
+
+router.get('/ping', (req, res) => res.send('pong'));
+router.get('/debug-health', (req, res) => {
+  res.json({ 
+    ok: true, 
+    supabase: !!supabase, 
+    vercel: true, 
+    time: new Date().toISOString(),
+    apiBase: req.baseUrl,
+    url: req.url
+  });
 });
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 ENTITIES.forEach(entity => {
-  app.get(`/api/${entity}`, async (req, res) => {
+  router.get(`/${entity}`, async (req, res) => {
     try { res.json(await getAll(entity)); }
     catch (e) { res.status(500).json({ error: e.message }); }
   });
 
-  app.post(`/api/${entity}`, async (req, res) => {
+  router.post(`/${entity}`, async (req, res) => {
     try { 
       const result = await createOne(entity, req.body);
       res.status(201).json(result); 
     } catch (e) { 
-      console.error(`❌ POST /api/${entity} Error:`, e);
+      console.error(`❌ POST /${entity} Error:`, e);
       res.status(500).json({ error: e.message }); 
     }
   });
 
-  app.put(`/api/${entity}/:id`, async (req, res) => {
+  router.put(`/${entity}/:id`, async (req, res) => {
     try { res.json(await updateOne(entity, req.params.id, req.body)); }
     catch (e) { res.status(404).json({ error: e.message }); }
   });
 
-  app.delete(`/api/${entity}/:id`, async (req, res) => {
+  router.delete(`/${entity}/:id`, async (req, res) => {
     try { await deleteOne(entity, req.params.id); res.status(204).send(); }
     catch (e) { res.status(404).json({ error: e.message }); }
   });
 });
 
-app.post('/api/send-otp', async (req, res) => {
+router.post('/send-otp', async (req, res) => {
   const { toEmail, toName, otpCode } = req.body;
   if (!toEmail || !toName || !otpCode) return res.status(400).json({ error: 'Missing fields' });
   try {
@@ -206,12 +215,24 @@ app.post('/api/send-otp', async (req, res) => {
   }
 });
 
-app.get('/api/health', (req, res) => {
+router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     db: supabase ? 'supabase' : 'json-files',
     vercel: true,
     timestamp: new Date().toISOString()
+  });
+});
+
+// Mount the router on BOTH /api and / to handle different Vercel rewrite behaviors
+app.use('/api', router);
+app.use('/', router);
+
+app.use('*', (req, res) => {
+  console.log(`[404] ${req.method} ${req.originalUrl}`);
+  res.status(404).json({ 
+    error: `Backend path not found: ${req.method} ${req.originalUrl}`,
+    hint: 'Check your API_BASE and Vercel rewrites.'
   });
 });
 
