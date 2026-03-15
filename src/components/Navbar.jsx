@@ -11,6 +11,7 @@ const navLinks = [
   { label: '🎯 Practice', to: '/practice', protected: true },
   { label: '🎓 Learn',  to: '/learn',     protected: true, highlight: true },
   { label: 'Contact',   to: '/contact' },
+  { label: '⚙️ Admin',   to: '/admin-dashboard', adminOnly: true },
 ];
 
 export default function Navbar() {
@@ -82,6 +83,7 @@ export default function Navbar() {
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map(link => {
+              if (link.adminOnly && currentUser?.role !== 'admin') return null;
               const active = location.pathname === link.to;
               return (
                 <Link key={link.to} to={link.to}
@@ -173,18 +175,21 @@ export default function Navbar() {
             exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
             className="md:hidden bg-white border-t border-gray-100 overflow-hidden">
             <div className="px-4 py-4 space-y-1">
-              {navLinks.map(link => (
-                <Link key={link.to} to={link.to}
-                  onClick={(e) => handleProtectedClick(e, link)}
-                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    location.pathname === link.to
-                      ? 'bg-gfg-green-pale text-gfg-green'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}>
-                  {link.label}
-                  {link.protected && !isAuthenticated && <span className="text-amber-400">🔒</span>}
-                </Link>
-              ))}
+              {navLinks.map(link => {
+                if (link.adminOnly && currentUser?.role !== 'admin') return null;
+                return (
+                  <Link key={link.to} to={link.to}
+                    onClick={(e) => handleProtectedClick(e, link)}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      location.pathname === link.to
+                        ? 'bg-gfg-green-pale text-gfg-green'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}>
+                    {link.label}
+                    {link.protected && !isAuthenticated && <span className="text-amber-400">🔒</span>}
+                  </Link>
+                );
+              })}
               <div className="pt-3 border-t border-gray-100 space-y-2">
                 {isAuthenticated ? (
                   <div>
