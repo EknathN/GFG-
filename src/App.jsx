@@ -16,6 +16,7 @@ import Practice from './pages/Practice';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import Profile from './pages/Profile';
+import NotFound from './pages/NotFound';
 import './index.css';
 
 export default function App() {
@@ -45,6 +46,9 @@ export default function App() {
               
               {/* Profile */}
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+
+              {/* Catch-all 404 Route */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
           <Footer />
