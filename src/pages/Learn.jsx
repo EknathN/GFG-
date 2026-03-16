@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeEditor from '../components/CodeEditor';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 const difficultyBadge = {
   Beginner:     'bg-green-100 text-green-700',

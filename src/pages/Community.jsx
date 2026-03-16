@@ -4,7 +4,7 @@ import LeaderboardRow from '../components/LeaderboardRow';
 import BlogCard from '../components/BlogCard';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 const tabs = ['Leaderboard', 'Blog Updates'];
 
 export default function Community() {

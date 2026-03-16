@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CodeEditor from '../components/CodeEditor';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
 
 const difficultyBadge = {
   Easy: 'bg-green-100 text-green-700',
