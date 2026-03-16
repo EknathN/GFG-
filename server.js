@@ -100,6 +100,7 @@ async function sbDelete(table, id) {
 const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice', 'messages'];
 
 async function getAll(entity) {
+  if (entity === 'lessons') return readJSON(entity);
   if (supabase) return sbGetAll(entity);
   return readJSON(entity);
 }
