@@ -6,6 +6,7 @@ import { Resend } from 'resend';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cron from 'node-cron';
 
 dotenv.config();
 
@@ -25,7 +26,9 @@ const SCHEMA = {
   leaderboard: ['id', 'rank', 'name', 'regNo', 'points', 'avatar'],
   messages: ['id', 'name', 'email', 'subject', 'message', 'createdAt'],
   practice: ['id', 'title', 'difficulty', 'tags', 'description', 'link'],
-  lessons: ['id', 'title', 'category', 'content']
+  lessons: ['id', 'title', 'category', 'content'],
+  mentors: ['id', 'name', 'expertise', 'bio', 'availableSlots', 'image', 'email'],
+  bookings: ['id', 'studentName', 'studentEmail', 'mentorId', 'mentorName', 'mentorEmail', 'date', 'time', 'status', 'meetingLink']
 };
 
 let supabase = null;
@@ -97,7 +100,7 @@ async function sbDelete(table, id) {
 }
 
 // ── Unified data access (Supabase first, JSON fallback) ───────────────────────
-const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice', 'messages'];
+const ENTITIES = ['blogs', 'events', 'resources', 'leaderboard', 'lessons', 'users', 'practice', 'messages', 'mentors', 'bookings'];
 
 async function getAll(entity) {
   if (entity === 'lessons') return readJSON(entity);
@@ -192,7 +195,9 @@ app.post('/api/seed', async (req, res) => {
     leaderboard: ['id', 'rank', 'name', 'regNo', 'points', 'avatar'],
     messages: ['id', 'name', 'email', 'subject', 'message', 'createdAt'],
     practice: ['id', 'title', 'difficulty', 'tags', 'description', 'link'],
-    lessons: ['id', 'title', 'category', 'content']
+    lessons: ['id', 'title', 'category', 'content'],
+    mentors: ['id', 'name', 'expertise', 'bio', 'availableSlots', 'image', 'email'],
+    bookings: ['id', 'studentName', 'studentEmail', 'mentorId', 'mentorName', 'mentorEmail', 'date', 'time', 'status', 'meetingLink']
   };
 
   for (const entity of ENTITIES) {
@@ -243,6 +248,44 @@ app.post('/api/send-otp', async (req, res) => {
     res.status(200).json({ success: true });
   } catch (e) {
     res.status(500).json({ error: 'Failed to send OTP', details: e.message });
+  }
+});
+
+// ── CRON: Meeting Reminder ────────────────────────────────────────────────────
+cron.schedule('* * * * *', async () => {
+  try {
+    const bookings = await getAll('bookings');
+    const now = new Date();
+    // Look for bookings happening exactly 30 mins from now (within a 1-minute window)
+    const upcoming = bookings.filter(b => {
+      if (b.status !== 'confirmed') return false;
+      const bDate = new Date(`${b.date}T${b.time}`);
+      const diffMinutes = Math.round((bDate - now) / 60000);
+      return diffMinutes === 30;
+    });
+
+    for (const b of upcoming) {
+      console.log(`Sending reminder for booking ${b.id} to ${b.studentEmail}...`);
+      await resend.emails.send({
+        from: 'GFG Mentorship <onboarding@resend.dev>',
+        to: [b.studentEmail],
+        subject: `Reminder: Meeting with ${b.mentorName} in 30 Minutes!`,
+        html: `<div style="font-family:sans-serif;padding:20px;">
+          <h2>Mentorship Meeting Reminder</h2>
+          <p>Hello ${b.studentName},</p>
+          <p>Your session with <b>${b.mentorName}</b> starts in exactly 30 minutes!</p>
+          <p><b>Date:</b> ${b.date}<br/><b>Time:</b> ${b.time}</p>
+          <div style="margin:20px 0;">
+             <a href="${b.meetingLink || '#'}" style="background:#2faa5a;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:bold;">Join Meeting</a>
+          </div>
+          <p>If the link above doesn't work, copy this URL: <br/>${b.meetingLink || 'N/A'}</p>
+        </div>`
+      });
+      // Optionally mark as reminded to prevent duplicate sends if cron runs multiple times
+      await updateOne('bookings', b.id, { status: 'reminded' });
+    }
+  } catch (error) {
+    console.error('Cron Job Error:', error);
   }
 });
 

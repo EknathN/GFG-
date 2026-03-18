@@ -8,6 +8,7 @@ const navLinks = [
   { label: 'Events',    to: '/events',    protected: true },
   { label: 'Resources', to: '/resources', protected: true },
   { label: 'Community', to: '/community', protected: true },
+  { label: '🤝 Mentors', to: '/mentors', protected: true },
   { label: '🎯 Practice', to: '/practice', protected: true },
   { label: '🎓 Learn',  to: '/learn',     protected: true, highlight: true },
   { label: 'Contact',   to: '/contact' },

@@ -214,6 +214,8 @@ export default function AdminDashboard() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [messages, setMessages] = useState([]);
   const [practice, setPractice] = useState([]);
+  const [mentors, setMentors] = useState([]);
+  const [bookings, setBookings] = useState([]);
 
   const [modal, setModal] = useState(null); // { type: 'edit'|'add'|'delete', entity, data }
   const [viewProfile, setViewProfile] = useState(null); // { user }
@@ -237,6 +239,8 @@ export default function AdminDashboard() {
         fetch(`${API}/leaderboard`).then(r => r.json()),
         fetch(`${API}/messages`).then(r => r.json()),
         fetch(`${API}/practice`).then(r => r.json()),
+        fetch(`${API}/mentors`).then(r => r.json()),
+        fetch(`${API}/bookings`).then(r => r.json()),
       ]);
       setUsers(Array.isArray(u) ? u : []);
       setEvents(Array.isArray(ev) ? ev : []);
@@ -245,6 +249,8 @@ export default function AdminDashboard() {
       setLeaderboard(Array.isArray(lb) ? lb : []);
       setMessages(Array.isArray(ms) ? ms : []);
       setPractice(Array.isArray(pr) ? pr : []);
+      setMentors(Array.isArray(men) ? men : []);
+      setBookings(Array.isArray(boo) ? boo : []);
     } catch { showToast('Failed to fetch data', false); }
     setLoading(false);
   }, []);
@@ -375,6 +381,8 @@ export default function AdminDashboard() {
     { id: 'leaderboard', icon: '🏆', label: 'Leaderboard' },
     { id: 'messages', icon: '💬', label: 'Messages' },
     { id: 'practice', icon: '💻', label: 'Practice' },
+    { id: 'mentors', icon: '🤝', label: 'Mentors' },
+    { id: 'bookings', icon: '📅', label: 'Bookings' },
   ];
 
   return (
@@ -465,11 +473,13 @@ export default function AdminDashboard() {
               {/* ── OVERVIEW ── */}
               {tab === 'overview' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <StatCard icon="👥" label="Total Members" value={approvedMembers.length} sub={`${pendingMembers.length} pending approval`} onClick={() => setTab('members')} />
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    <StatCard icon="👥" label="Total Members" value={approvedMembers.length} sub={`${pendingMembers.length} pending`} onClick={() => setTab('members')} />
                     <StatCard icon="📅" label="Events" value={events.length} sub="Total organized" color="#3b82f6" onClick={() => setTab('events')} />
                     <StatCard icon="📝" label="Blogs" value={blogs.length} sub="Published articles" color="#f59e0b" onClick={() => setTab('blogs')} />
                     <StatCard icon="💬" label="Messages" value={messages.length} sub="Contact forms" color="#8b5cf6" onClick={() => setTab('messages')} />
+                    <StatCard icon="🤝" label="Mentors" value={mentors.length} sub="Available mentors" color="#10b981" onClick={() => setTab('mentors')} />
+                    <StatCard icon="📅" label="Bookings" value={bookings.length} sub="Total sessions" color="#ec4899" onClick={() => setTab('bookings')} />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -532,6 +542,7 @@ export default function AdminDashboard() {
                         { label: 'Events', value: events.length, color: '#3b82f6' },
                         { label: 'Resources', value: resources.length, color: '#2faa5a' },
                         { label: 'Practice', value: practice.length, color: '#8b5cf6' },
+                        { label: 'Mentors', value: mentors.length, color: '#10b981' },
                       ]} size={120} />
                     </div>
                   </div>
@@ -720,6 +731,41 @@ export default function AdminDashboard() {
                     }))}
                     onEdit={d => openEdit('practice', d)}
                     onDelete={d => openDelete('practice', d)}
+                  />
+                </div>
+              )}
+
+              {/* ── MENTORS ── */}
+              {tab === 'mentors' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-white">Mentors ({filter(mentors).length})</h3>
+                    <GBtn onClick={() => openAdd('mentors', { name: '', email: '', expertise: '', bio: '', availableSlots: '', image: '' })}>+ Add Mentor</GBtn>
+                  </div>
+                  <Table
+                    headers={['Name', 'Email', 'Expertise', 'Bio']}
+                    rows={filter(mentors).map(m => ({
+                      data: m,
+                      cells: [m.name, m.email, m.expertise || 'General Tech', m.bio || '—']
+                    }))}
+                    onEdit={d => openEdit('mentors', d)}
+                    onDelete={d => openDelete('mentors', d)}
+                  />
+                </div>
+              )}
+
+              {/* ── BOOKINGS ── */}
+              {tab === 'bookings' && (
+                <div className="space-y-4">
+                  <h3 className="font-bold text-white">All Bookings ({filter(bookings).length})</h3>
+                  <Table
+                    headers={['Student', 'Mentor', 'Date', 'Time', 'Status']}
+                    rows={filter(bookings).map(b => ({
+                      data: b,
+                      cells: [b.studentName, b.mentorName, b.date, b.time, b.status || 'pending']
+                    }))}
+                    onEdit={d => openEdit('bookings', d)}
+                    onDelete={d => openDelete('bookings', d)}
                   />
                 </div>
               )}

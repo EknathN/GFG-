@@ -13,6 +13,7 @@ import Learn from './pages/Learn';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Practice from './pages/Practice';
+import Mentors from './pages/Mentors';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
 import Profile from './pages/Profile';
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/community" element={<ProtectedRoute><Community /></ProtectedRoute>} />
               <Route path="/practice"  element={<ProtectedRoute><Practice /></ProtectedRoute>} />
               <Route path="/learn"     element={<ProtectedRoute><Learn /></ProtectedRoute>} />
+              <Route path="/mentors"   element={<ProtectedRoute><Mentors /></ProtectedRoute>} />
               
               {/* Admin only */}
               <Route path="/admin-dashboard" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
