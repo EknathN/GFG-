@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { hashPassword, generateSalt, FIXED_ADMIN_SALT, FIXED_ADMIN_HASH } from '../utils/crypto';
+import { hashPassword, generateSalt, ADMIN_PASSWORD } from '../utils/crypto';
 
 const API = '/api';
 
@@ -282,8 +282,8 @@ export default function AdminDashboard() {
       // Handle password hashing if entity is users
       if (entity === 'users') {
         if (finalBody.role === 'admin') {
-          finalBody.salt = FIXED_ADMIN_SALT;
-          finalBody.passwordHash = FIXED_ADMIN_HASH;
+          finalBody.salt = 'GFG_ADMIN_SALT_2026';
+          finalBody.passwordHash = ADMIN_PASSWORD; // stored as plaintext for admin
           delete finalBody.password;
         } else if (finalBody.password) {
           const salt = generateSalt();
