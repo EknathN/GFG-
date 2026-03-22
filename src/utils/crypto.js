@@ -1,7 +1,7 @@
 // ── Web Crypto API utilities ──────────────────────────────────────────────────
 // All operations are async, browser-native, no external libraries needed.
 export const FIXED_ADMIN_SALT = 'GFG_ADMIN_SALT_2026';
-export const FIXED_ADMIN_HASH = 'XBsquFvzupHiAltwWVZF+YpSXYTr27GG4A/+BWbEQmg='; // password: admin
+export const FIXED_ADMIN_HASH = 'AFmHln7VacaOyAe0qHY+9GlglLoqc8YdLL0GSGPyZBI='; // password: admin123
 
 /** Generate a random Base64 salt */
 export function generateSalt(bytes = 16) {
