@@ -1,7 +1,6 @@
 // ── Web Crypto API utilities ──────────────────────────────────────────────────
 // All operations are async, browser-native, no external libraries needed.
-export const FIXED_ADMIN_SALT = 'GFG_ADMIN_SALT_2026';
-export const FIXED_ADMIN_HASH = 'AFmHln7VacaOyAe0qHY+9GlglLoqc8YdLL0GSGPyZBI='; // password: admin123
+export const ADMIN_PASSWORD = 'admin123';
 
 /** Generate a random Base64 salt */
 export function generateSalt(bytes = 16) {
@@ -169,6 +168,18 @@ export async function addPointsToUser(regNo, pointsToAdd) {
 }
 
 export async function loginUser(regNo, password) {
+  if (regNo === '2117250040059') {
+    if (password !== ADMIN_PASSWORD) throw new Error('Incorrect password. Please try again.');
+    return {
+      id: 'admin-fixed-id',
+      name: 'Admin',
+      regNo: '2117250040059',
+      role: 'admin',
+      approved: true,
+      points: 0
+    };
+  }
+
   const user = await findUserByRegNo(regNo);
   if (!user) throw new Error('Registration number not found.');
   const valid = await verifyPassword(password, user.salt, user.passwordHash);
